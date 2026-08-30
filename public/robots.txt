@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /internal/
+
+Sitemap: https://pfeiferbuild.com/sitemap.xml
