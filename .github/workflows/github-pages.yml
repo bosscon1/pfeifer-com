@@ -1,0 +1,58 @@
+name: Preview on GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Build static preview
+        env:
+          GITHUB_PAGES: "1"
+        run: npm run build:pages
+      - name: Pick publish folder
+        run: |
+          if [ -d dist/client ]; then DIR=dist/client
+          elif [ -d .output/public ]; then DIR=.output/public
+          elif [ -d dist ]; then DIR=dist
+          else
+            echo "No static build folder found"
+            find . -maxdepth 3 -type d -name public -o -name dist -o -name client
+            exit 1
+          fi
+          echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
+          touch "$DIR/.nojekyll"
+          if [ -f "$DIR/index.html" ]; then cp "$DIR/index.html" "$DIR/404.html"; fi
+          echo "Publishing $DIR"
+          ls "$DIR" | head
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.PUBLISH_DIR }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
