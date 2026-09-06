@@ -1,4 +1,5 @@
 import { HeroVideo } from "@/components/hero-video";
+import { withBase } from "@/lib/preview-base";
 
 export function PageHero({
   image,
@@ -20,7 +21,7 @@ export function PageHero({
       {video ? (
         <HeroVideo src={video} poster={image} />
       ) : (
-        <img src={image} alt={alt} className="absolute inset-0 size-full object-cover" />
+        <img src={withBase(image)} alt={alt} className="absolute inset-0 size-full object-cover" />
       )}
       <div className="absolute inset-0 bg-ink/55" />
       <div className="relative mx-auto flex min-h-[70vh] max-w-4xl flex-col items-center justify-center px-4 pb-16 pt-44 text-center text-paper">
