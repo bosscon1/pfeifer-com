@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { SITE } from "@/data/site";
+import { withBase } from "@/lib/preview-base";
 
 export function Logo({
   compact = false,
@@ -17,7 +18,7 @@ export function Logo({
   return (
     <Link to="/" className="flex items-center text-paper no-underline" aria-label={`${SITE.name} home`}>
       <img
-        src="/images/logo.png"
+        src={withBase("/images/logo.png")}
         alt=""
         width={438}
         height={132}
