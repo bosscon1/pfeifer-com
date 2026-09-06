@@ -143,8 +143,15 @@ export default defineConfig(({ command, isPreview }) => ({
             prerender: {
               enabled: true,
               crawlLinks: true,
-              autoSubfolderIndex: false,
+              autoSubfolderIndex: true,
             },
+            pages: [
+              { path: "/" },
+              { path: "/about/" },
+              { path: "/contact/" },
+              { path: "/get-started/" },
+              { path: "/decks-by-pfeifer/" },
+            ],
             spa: { enabled: true },
           }
         : {},
