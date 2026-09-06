@@ -1,3 +1,5 @@
+import { withBase } from "@/lib/preview-base";
+
 export function PhotoGrid({
   items,
 }: {
@@ -13,7 +15,7 @@ export function PhotoGrid({
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (
             <figure key={item.src + item.alt} className="overflow-hidden bg-cream">
-              <img src={item.src} alt={item.alt} className="aspect-16/10 w-full object-cover" />
+              <img src={withBase(item.src)} alt={item.alt} className="aspect-16/10 w-full object-cover" />
             </figure>
           ))}
         </div>
