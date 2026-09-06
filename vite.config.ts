@@ -143,17 +143,17 @@ export default defineConfig(({ command, isPreview }) => ({
             prerender: {
               enabled: true,
               crawlLinks: true,
-              autoSubfolderIndex: true,
+              autoSubfolderIndex: false,
             },
             spa: { enabled: true },
           }
         : {},
     ),
-    ...(command === "build" || isPreview
+    ...(!githubPages && (command === "build" || isPreview)
       ? [
           nitro({
-            preset: githubPages ? "static" : "vercel",
-            serverDir: githubPages ? false : "./server",
+            preset: "vercel",
+            serverDir: "./server",
           }),
         ]
       : []),
