@@ -30,27 +30,35 @@ jobs:
         run: |
           set +e
           npm run build:pages
-          echo "---- html files after build ----"
-          find .output dist public -name "*.html" 2>/dev/null | head -50
-          echo "---- dirs ----"
-          ls -la .output 2>/dev/null || true
+          BUILD_STATUS=$?
+          echo "---- after build (exit $BUILD_STATUS) ----"
+          find .output dist public -name "index*" -o -name "*.html" 2>/dev/null | head -80
           ls -la .output/public 2>/dev/null || true
-          HTML=$(find .output dist -name index.html 2>/dev/null | head -1)
-          if [ -n "$HTML" ]; then
-            DIR=$(dirname "$HTML")
-            echo "FOUND_INDEX=$HTML"
-            echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
-            exit 0
+          ls -la dist 2>/dev/null || true
+          ls -la dist/client 2>/dev/null || true
+
+          # Nitro sometimes writes a zero-byte file named "index" instead of index.html
+          if [ -f .output/public/index ] && [ ! -f .output/public/index.html ]; then
+            if [ -s .output/public/index ]; then
+              cp .output/public/index .output/public/index.html
+            fi
           fi
-          echo "No index.html found"
-          exit 1
+
+          HTML=$(find .output dist -name index.html 2>/dev/null | head -1)
+          if [ -z "$HTML" ]; then
+            echo "No index.html from the builder"
+            exit 1
+          fi
+          DIR=$(dirname "$HTML")
+          echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
+          echo "Using $HTML"
+          exit 0
       - name: Prepare publish folder
         run: |
           DIR="${PUBLISH_DIR}"
-          echo "Using $DIR"
-          ls -la "$DIR" | head
           touch "$DIR/.nojekyll"
           cp "$DIR/index.html" "$DIR/404.html"
+          ls -la "$DIR" | head
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.PUBLISH_DIR }}
