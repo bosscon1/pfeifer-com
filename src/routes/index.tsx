@@ -4,6 +4,7 @@ import { CtaBand } from "@/components/cta-band";
 import { HeroVideo } from "@/components/hero-video";
 import { ReviewBanner } from "@/components/review-banner";
 import { SERVICES, SITE, TEAM } from "@/data/site";
+import { withBase } from "@/lib/preview-base";
 import { orgJsonLd } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: "https://pfeiferbuild.com/" },
-      { rel: "preload", as: "image", href: "/images/hero-porch.jpg" },
+      { rel: "preload", as: "image", href: withBase("/images/hero-porch.jpg") },
     ],
   }),
   component: Home,
@@ -64,7 +65,7 @@ function Home() {
       <section className="bg-paper py-16">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-2 md:items-center">
           <img
-            src="/images/full-home.jpg"
+            src={withBase("/images/full-home.jpg")}
             alt="Georgia home with a matching addition and covered porch"
             className="aspect-4/3 w-full object-cover"
           />
@@ -106,7 +107,7 @@ function Home() {
                 to={s.href}
                 className="group overflow-hidden bg-paper no-underline shadow-sm"
               >
-                <img src={s.image} alt="" className="aspect-16/10 w-full object-cover" />
+                <img src={withBase(s.image)} alt="" className="aspect-16/10 w-full object-cover" />
                 <div className="p-4">
                   <h3 className="font-display text-xl text-ink group-hover:text-pfeifer">{s.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{s.blurb}</p>
@@ -210,8 +211,8 @@ function Home() {
           <h2 className="font-display text-3xl text-ink">Recent covered porch</h2>
           <p className="mt-2 text-muted">Before-and-after style work we do every season in Peachtree City.</p>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <img src="/images/porch.jpg" alt="Screened porch addition looking onto a Georgia yard" className="aspect-16/10 w-full object-cover" />
-            <img src="/images/hero-deck.jpg" alt="Composite deck with white railings" className="aspect-16/10 w-full object-cover" />
+            <img src={withBase("/images/porch.jpg")} alt="Screened porch addition looking onto a Georgia yard" className="aspect-16/10 w-full object-cover" />
+            <img src={withBase("/images/hero-deck.jpg")} alt="Composite deck with white railings" className="aspect-16/10 w-full object-cover" />
           </div>
         </div>
       </section>
