@@ -30,32 +30,27 @@ jobs:
         run: |
           set +e
           npm run build:pages
-          STATUS=$?
-          if [ -f .output/public/index.html ]; then
-            echo "Preview files are ready in .output/public"
+          echo "---- html files after build ----"
+          find .output dist public -name "*.html" 2>/dev/null | head -50
+          echo "---- dirs ----"
+          ls -la .output 2>/dev/null || true
+          ls -la .output/public 2>/dev/null || true
+          HTML=$(find .output dist -name index.html 2>/dev/null | head -1)
+          if [ -n "$HTML" ]; then
+            DIR=$(dirname "$HTML")
+            echo "FOUND_INDEX=$HTML"
+            echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
             exit 0
           fi
-          if [ -f dist/client/index.html ]; then
-            echo "Preview files are ready in dist/client"
-            exit 0
-          fi
-          echo "Build did not produce preview files"
-          exit $STATUS
-      - name: Pick publish folder
+          echo "No index.html found"
+          exit 1
+      - name: Prepare publish folder
         run: |
-          if [ -d .output/public ] && [ -f .output/public/index.html ]; then DIR=.output/public
-          elif [ -d dist/client ] && [ -f dist/client/index.html ]; then DIR=dist/client
-          elif [ -d dist ] && [ -f dist/index.html ]; then DIR=dist
-          else
-            echo "No static build folder found"
-            find . -maxdepth 3 -type d \( -name public -o -name dist -o -name client \)
-            exit 1
-          fi
-          echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
+          DIR="${PUBLISH_DIR}"
+          echo "Using $DIR"
+          ls -la "$DIR" | head
           touch "$DIR/.nojekyll"
           cp "$DIR/index.html" "$DIR/404.html"
-          echo "Publishing $DIR"
-          ls "$DIR" | head
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.PUBLISH_DIR }}
