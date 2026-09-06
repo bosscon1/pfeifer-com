@@ -27,38 +27,49 @@ jobs:
       - name: Build static preview
         env:
           GITHUB_PAGES: "1"
+        run: npm run build:pages
+      - name: Prepare publish folder
         run: |
-          set +e
-          npm run build:pages
-          BUILD_STATUS=$?
-          echo "---- after build (exit $BUILD_STATUS) ----"
-          find .output dist public -name "index*" -o -name "*.html" 2>/dev/null | head -80
-          ls -la .output/public 2>/dev/null || true
-          ls -la dist 2>/dev/null || true
-          ls -la dist/client 2>/dev/null || true
+          set -e
+          if [ -d dist/client ]; then
+            DIR=dist/client
+          elif [ -d .output/public ]; then
+            DIR=.output/public
+          else
+            echo "No client build folder"
+            ls -la
+            exit 1
+          fi
 
-          # Nitro sometimes writes a zero-byte file named "index" instead of index.html
-          if [ -f .output/public/index ] && [ ! -f .output/public/index.html ]; then
-            if [ -s .output/public/index ]; then
-              cp .output/public/index .output/public/index.html
+          echo "Client folder: $DIR"
+          ls -la "$DIR" | head -40
+
+          # Homepage must be the site root, never a nested article folder.
+          if [ ! -f "$DIR/index.html" ]; then
+            if [ -f "$DIR/index/index.html" ]; then
+              cp "$DIR/index/index.html" "$DIR/index.html"
+            elif [ -s "$DIR/index" ]; then
+              cp "$DIR/index" "$DIR/index.html"
+            else
+              echo "Missing homepage index.html in $DIR"
+              find "$DIR" -name index.html | head -20
+              exit 1
             fi
           fi
 
-          HTML=$(find .output dist -name index.html 2>/dev/null | head -1)
-          if [ -z "$HTML" ]; then
-            echo "No index.html from the builder"
-            exit 1
-          fi
-          DIR=$(dirname "$HTML")
-          echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
-          echo "Using $HTML"
-          exit 0
-      - name: Prepare publish folder
-        run: |
-          DIR="${PUBLISH_DIR}"
+          # Static files Pages needs next to the built pages
+          cp -a public/images "$DIR/" 2>/dev/null || true
+          cp -a public/videos "$DIR/" 2>/dev/null || true
+          cp -a public/favicon.svg "$DIR/" 2>/dev/null || true
+          cp -a public/og.jpg "$DIR/" 2>/dev/null || true
+
           touch "$DIR/.nojekyll"
           cp "$DIR/index.html" "$DIR/404.html"
-          ls -la "$DIR" | head
+
+          echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
+          echo "Homepage bytes: $(wc -c < "$DIR/index.html")"
+          echo "Publish listing:"
+          ls "$DIR" | head -50
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.PUBLISH_DIR }}
