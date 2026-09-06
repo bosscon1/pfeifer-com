@@ -44,20 +44,34 @@ jobs:
           echo "Client folder: $DIR"
           ls -la "$DIR" | head -40
 
-          # Homepage must be the site root, never a nested article folder.
+          # Folder pages GitHub Pages can open at /about/ and /contact/
+          for page in about contact get-started decks-by-pfeifer; do
+            if [ -f "$DIR/$page.html" ] && [ ! -f "$DIR/$page/index.html" ]; then
+              mkdir -p "$DIR/$page"
+              cp "$DIR/$page.html" "$DIR/$page/index.html"
+            fi
+          done
+
           if [ ! -f "$DIR/index.html" ]; then
             if [ -f "$DIR/index/index.html" ]; then
               cp "$DIR/index/index.html" "$DIR/index.html"
-            elif [ -s "$DIR/index" ]; then
-              cp "$DIR/index" "$DIR/index.html"
-            else
-              echo "Missing homepage index.html in $DIR"
-              find "$DIR" -name index.html | head -20
-              exit 1
             fi
           fi
 
-          # Static files Pages needs next to the built pages
+          if [ -f "$DIR/index.html" ] && grep -q "Transparent Pricing" "$DIR/index.html" && ! grep -q "Transform your space" "$DIR/index.html"; then
+            HOME=$(grep -rl "Transform your space with Pfeifer" "$DIR" --include='index.html' --include='*.html' | head -1 || true)
+            if [ -n "$HOME" ]; then
+              echo "Replacing wrong homepage with $HOME"
+              cp "$HOME" "$DIR/index.html"
+            fi
+          fi
+
+          if [ ! -f "$DIR/index.html" ]; then
+            echo "Missing homepage index.html"
+            find "$DIR" -name index.html | head -30
+            exit 1
+          fi
+
           cp -a public/images "$DIR/" 2>/dev/null || true
           cp -a public/videos "$DIR/" 2>/dev/null || true
           cp -a public/favicon.svg "$DIR/" 2>/dev/null || true
@@ -67,9 +81,10 @@ jobs:
           cp "$DIR/index.html" "$DIR/404.html"
 
           echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
-          echo "Homepage bytes: $(wc -c < "$DIR/index.html")"
-          echo "Publish listing:"
-          ls "$DIR" | head -50
+          echo "Homepage title check:"
+          grep -o "<title>[^<]*</title>" "$DIR/index.html" | head -3 || true
+          ls "$DIR/about" 2>/dev/null || true
+          ls "$DIR/contact" 2>/dev/null || true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.PUBLISH_DIR }}
