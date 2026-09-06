@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { withBase } from "@/lib/preview-base";
 
 export function HeroVideo({
   src,
@@ -48,10 +49,10 @@ export function HeroVideo({
       loop
       playsInline
       preload="auto"
-      poster={poster}
+      poster={withBase(poster)}
       aria-hidden="true"
     >
-      <source src={src} type="video/mp4" />
+      <source src={withBase(src)} type="video/mp4" />
     </video>
   );
 }
