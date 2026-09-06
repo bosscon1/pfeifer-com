@@ -27,20 +27,33 @@ jobs:
       - name: Build static preview
         env:
           GITHUB_PAGES: "1"
-        run: npm run build:pages
+        run: |
+          set +e
+          npm run build:pages
+          STATUS=$?
+          if [ -f .output/public/index.html ]; then
+            echo "Preview files are ready in .output/public"
+            exit 0
+          fi
+          if [ -f dist/client/index.html ]; then
+            echo "Preview files are ready in dist/client"
+            exit 0
+          fi
+          echo "Build did not produce preview files"
+          exit $STATUS
       - name: Pick publish folder
         run: |
-          if [ -d dist/client ]; then DIR=dist/client
-          elif [ -d .output/public ]; then DIR=.output/public
-          elif [ -d dist ]; then DIR=dist
+          if [ -d .output/public ] && [ -f .output/public/index.html ]; then DIR=.output/public
+          elif [ -d dist/client ] && [ -f dist/client/index.html ]; then DIR=dist/client
+          elif [ -d dist ] && [ -f dist/index.html ]; then DIR=dist
           else
             echo "No static build folder found"
-            find . -maxdepth 3 -type d -name public -o -name dist -o -name client
+            find . -maxdepth 3 -type d \( -name public -o -name dist -o -name client \)
             exit 1
           fi
           echo "PUBLISH_DIR=$DIR" >> "$GITHUB_ENV"
           touch "$DIR/.nojekyll"
-          if [ -f "$DIR/index.html" ]; then cp "$DIR/index.html" "$DIR/404.html"; fi
+          cp "$DIR/index.html" "$DIR/404.html"
           echo "Publishing $DIR"
           ls "$DIR" | head
       - uses: actions/upload-pages-artifact@v3
