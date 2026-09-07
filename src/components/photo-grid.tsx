@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Lightbox, type LightboxPhoto } from "@/components/lightbox";
+import { withBase } from "@/lib/preview-base";
 
 export function PhotoGrid({
   items,
@@ -46,7 +47,7 @@ export function PhotoGrid({
                 aria-label={`View larger: ${item.alt}`}
               >
                 <img
-                  src={item.src}
+                  src={withBase(item.src)}
                   alt={item.alt}
                   className={masonry ? "block w-full" : "aspect-16/10 w-full object-cover"}
                 />

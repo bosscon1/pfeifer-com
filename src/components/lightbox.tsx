@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { withBase } from "@/lib/preview-base";
 
 export type LightboxPhoto = {
   src: string;
@@ -94,7 +95,7 @@ export function Lightbox({
         onClick={(e) => e.stopPropagation()}
       >
         <img
-          src={photo.fullSrc ?? photo.src}
+          src={withBase(photo.fullSrc ?? photo.src)}
           alt={photo.alt}
           className="max-h-[78dvh] w-auto max-w-full object-contain"
         />

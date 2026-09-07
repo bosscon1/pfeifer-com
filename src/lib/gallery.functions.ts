@@ -6,6 +6,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { assertStaffUser } from "@/lib/assert-staff";
+import { withBase } from "@/lib/preview-base";
 import {
   GALLERY_SLUGS,
   galleryStem,
@@ -114,7 +115,7 @@ async function readFolder(category: GalleryCategory): Promise<GalleryFolder> {
     if (!info.isFile()) continue;
     files.push({
       name,
-      url: `${store.urlBase}/${name}`,
+      url: withBase(`${store.urlBase}/${name}`),
       bytes: info.size,
       kind: kindOf(name),
     });
@@ -343,8 +344,8 @@ export const uploadGalleryPhotos = createServerFn({ method: "POST" })
         results.push({
           original: file.name,
           stem,
-          largeUrl: `${store.urlBase}/${stem}.jpg`,
-          thumbUrl: `${store.urlBase}/${stem}-thumb.jpg`,
+          largeUrl: withBase(`${store.urlBase}/${stem}.jpg`),
+          thumbUrl: withBase(`${store.urlBase}/${stem}-thumb.jpg`),
           largeKb: Math.round((processed.large?.bytes ?? 0) / 1024),
           thumbKb: Math.round((processed.thumb?.bytes ?? 0) / 1024),
         });

@@ -7,5 +7,6 @@ export function withBase(path: string): string {
   if (!path.startsWith("/")) return path;
   if (!PREVIEW_BASE) return path;
   if (path === "/") return `${PREVIEW_BASE}/`;
+  if (path.startsWith(`${PREVIEW_BASE}/`)) return path;
   return `${PREVIEW_BASE}${path}`;
 }
