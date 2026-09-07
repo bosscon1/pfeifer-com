@@ -43,6 +43,18 @@ function AdminHome() {
             Find missing old URLs, pick a live page, and publish a 301.
           </p>
         </Link>
+        <Link
+          to="/admin/photos/"
+          className="border border-line bg-paper p-5 no-underline hover:border-pfeifer"
+        >
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-pfeifer">
+            Ready
+          </p>
+          <h2 className="mt-2 font-display text-2xl text-ink">Photo galleries</h2>
+          <p className="mt-2 text-sm text-muted">
+            List folders and upload job photos. Each file is resized, named, and watermarked.
+          </p>
+        </Link>
         <div className="border border-line bg-paper p-5 opacity-70">
           <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted">
             Next

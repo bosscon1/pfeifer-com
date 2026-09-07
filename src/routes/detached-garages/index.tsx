@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ServicePage } from "@/components/service-page";
+import { loadGalleryAlbum } from "@/lib/gallery.functions";
 
 export const Route = createFileRoute("/detached-garages/")({
   head: () => ({
@@ -13,13 +14,21 @@ export const Route = createFileRoute("/detached-garages/")({
     ],
     links: [{ rel: "canonical", href: "https://pfeiferbuild.com/detached-garages/" }],
   }),
+  loader: async () => {
+    try {
+      return await loadGalleryAlbum({ data: { category: "garages" } });
+    } catch {
+      return { featuredUrl: "/images/garage.jpg", photos: [] as { src: string; fullSrc: string; alt: string; name: string }[] };
+    }
+  },
   component: Page,
 });
 
 function Page() {
+  const album = Route.useLoaderData();
   return (
     <ServicePage
-      image="/images/garage.jpg"
+      image={album.featuredUrl || "/images/garage.jpg"}
       eyebrow="Outbuildings"
       title="Detached Garages by Pfeifer"
       lede="More storage, a shop, or a bonus room — without crowding the house you already have."
@@ -37,11 +46,8 @@ function Page() {
           body: "Park below, office or living space above — often the cheapest way to add isolated square footage. We have attached these to an existing wood deck so the house and garage read as one.",
         },
       ]}
-      photos={[
-        { src: "/images/garage.jpg", alt: "Two-story detached garage with bonus room" },
-        { src: "/images/addition.jpg", alt: "Matching addition on a brick ranch" },
-        { src: "/images/full-home.jpg", alt: "HardiePlank exterior with new porch" },
-      ]}
+      photos={album.photos}
+      photoLayout="masonry"
     />
   );
 }

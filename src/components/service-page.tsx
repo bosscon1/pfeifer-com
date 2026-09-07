@@ -2,6 +2,7 @@ import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
 import { PhotoGrid } from "@/components/photo-grid";
 import { SixReasons } from "@/components/six-reasons";
+import type { LightboxPhoto } from "@/components/lightbox";
 
 export function ServicePage({
   image,
@@ -11,6 +12,7 @@ export function ServicePage({
   lede,
   sections,
   photos,
+  photoLayout = "grid",
 }: {
   image: string;
   video?: string;
@@ -18,7 +20,8 @@ export function ServicePage({
   title: string;
   lede: string;
   sections: { heading: string; body: string }[];
-  photos: { src: string; alt: string }[];
+  photos: LightboxPhoto[];
+  photoLayout?: "grid" | "masonry";
 }) {
   return (
     <main>
@@ -31,7 +34,7 @@ export function ServicePage({
           </section>
         ))}
       </article>
-      <PhotoGrid items={photos} />
+      <PhotoGrid items={photos} layout={photoLayout} />
       <SixReasons />
       <CtaBand />
     </main>
