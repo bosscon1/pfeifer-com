@@ -1,8 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { GROK_PROVIDERS, authClient, authEnabled, signIn, signOut } from "@/lib/auth/client";
+import { GROK_PROVIDERS, authClient, authEnabled, getBearerToken, signIn, signOut } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { isStaffEmail, staffEmailError, STAFF_EMAIL_DOMAIN } from "@/lib/staff-email";
+import {
+  rememberCurrentStaffSession,
+  rememberStaffSession,
+  tokenFromAuthData,
+} from "@/lib/staff-session";
 import { Logo } from "@/components/logo";
 
 export const Route = createFileRoute("/login")({
@@ -44,19 +49,24 @@ function Login() {
     setBusy(true);
     try {
       if (mode === "up") {
-        const { error: err } = await authClient.signUp.email({
+        const { data, error: err } = await authClient.signUp.email({
           email: trimmed,
           password,
           name: name.trim() || trimmed,
         });
         if (err) throw new Error(err.message || "Could not create the account.");
+        const token = tokenFromAuthData(data) ?? getBearerToken();
+        if (token) rememberStaffSession(token);
       } else {
-        const { error: err } = await authClient.signIn.email({
+        const { data, error: err } = await authClient.signIn.email({
           email: trimmed,
           password,
         });
         if (err) throw new Error(err.message || "Could not sign in.");
+        const token = tokenFromAuthData(data) ?? getBearerToken();
+        if (token) rememberStaffSession(token);
       }
+      rememberCurrentStaffSession();
       window.location.assign("/admin/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
@@ -93,7 +103,13 @@ function Login() {
                   key={p.providerId}
                   type="button"
                   className="w-full min-h-11 border border-line px-4 font-sans text-sm font-semibold text-ink hover:bg-cream"
-                  onClick={() => void signIn(p.providerId, { callbackURL: "/admin/" })}
+                  onClick={() => {
+                    const tick = window.setInterval(() => rememberCurrentStaffSession(), 200);
+                    void signIn(p.providerId, { callbackURL: "/admin/" }).finally(() => {
+                      rememberCurrentStaffSession();
+                      window.clearInterval(tick);
+                    });
+                  }}
                 >
                   Continue with {p.label}
                 </button>

@@ -124,6 +124,11 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    watch: {
+      // Staff photo admin writes/deletes under public/images. Watching those
+      // files full-reloads the Grok preview mid-request and aborts the save.
+      ignored: ["**/gallery.json", "**/public/images/**"],
+    },
   },
   preview: {
     host: "127.0.0.1",

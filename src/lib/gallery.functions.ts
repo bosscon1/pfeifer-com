@@ -279,7 +279,7 @@ export const deleteGalleryPhoto = createServerFn({ method: "POST" })
       join(store.dir, "gallery.json"),
       `${JSON.stringify({ featured, order }, null, 2)}\n`,
     );
-    return { folders: await Promise.all(GALLERY_SLUGS.map((c) => readFolder(c))), deleted: largeName };
+    return { folder: await readFolder(data.category), deleted: largeName };
   });
 
 export const uploadGalleryPhotos = createServerFn({ method: "POST" })
