@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ServicePage } from "@/components/service-page";
+import { loadGalleryAlbum } from "@/lib/gallery.functions";
+
+const FALLBACK_PHOTOS = [
+  { src: "/images/hero-deck.jpg", alt: "Elevated composite deck with white railings" },
+  { src: "/images/deck-stairs.jpg", alt: "Rebuilt wood deck stairs and railings" },
+  { src: "/images/porch.jpg", alt: "Covered porch connected to a deck" },
+];
 
 export const Route = createFileRoute("/decks-by-pfeifer/")({
   head: () => ({
@@ -16,10 +23,18 @@ export const Route = createFileRoute("/decks-by-pfeifer/")({
       { rel: "preload", as: "image", href: "/images/hero-decks.jpg" },
     ],
   }),
+  loader: async () => {
+    try {
+      return await loadGalleryAlbum({ data: { category: "decks" } });
+    } catch {
+      return { featuredUrl: "/images/hero-decks.jpg", photos: [] as { src: string; fullSrc: string; alt: string; name: string }[] };
+    }
+  },
   component: Page,
 });
 
 function Page() {
+  const album = Route.useLoaderData();
   return (
     <ServicePage
       image="/images/hero-decks.jpg"
@@ -41,11 +56,8 @@ function Page() {
           body: "We install most composite brands and pressure-treated KDAT. Covered decks are routine. If the structure is sound, we salvage it and replace boards, stairs, and handrails instead of tearing the whole thing down.",
         },
       ]}
-      photos={[
-        { src: "/images/hero-deck.jpg", alt: "Elevated composite deck with white railings" },
-        { src: "/images/deck-stairs.jpg", alt: "Rebuilt wood deck stairs and railings" },
-        { src: "/images/porch.jpg", alt: "Covered porch connected to a deck" },
-      ]}
+      photos={album.photos.length ? album.photos : FALLBACK_PHOTOS}
+      photoLayout="masonry"
     />
   );
 }

@@ -40,7 +40,54 @@ function AdminPhotos() {
   const [busy, setBusy] = useState<"load" | "upload" | null>("load");
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
-  const [openFolder, setOpenFolder] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    category: string;
+    name: string;
+    thumbUrl: string;
+    folder: GalleryFolder;
+  } | null>(null);
+  const [deletePhase, setDeletePhase] = useState<"confirm" | "working" | null>(null);
+  const [deleteProgress, setDeleteProgress] = useState(0);
+  const [openFolder, setOpenFolder] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem("pfeifer-admin-gallery") || null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (openFolder) sessionStorage.setItem("pfeifer-admin-gallery", openFolder);
+      else sessionStorage.removeItem("pfeifer-admin-gallery");
+    } catch {
+      /* ignore */
+    }
+  }, [openFolder]);
+
+  useEffect(() => {
+    if (deletePhase !== "working") {
+      setDeleteProgress(0);
+      return;
+    }
+    setDeleteProgress(16);
+    const id = window.setInterval(() => {
+      setDeleteProgress((p) => (p >= 90 ? 90 : p + 8));
+    }, 160);
+    return () => window.clearInterval(id);
+  }, [deletePhase]);
+
+  useEffect(() => {
+    if (deletePhase !== "confirm") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPendingDelete(null);
+        setDeletePhase(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [deletePhase]);
 
   useEffect(() => {
     if (isPending || !user) return;
@@ -59,29 +106,72 @@ function AdminPhotos() {
     return () => {
       live = false;
     };
-  }, [isPending, user]);
+  }, [isPending, user?.id]);
+
+  function showFolder(prev: GalleryFolder[], category: string, featured: string, order: string[]) {
+    return prev.map((f) => {
+      if (f.category !== category) return f;
+      const byName = new Map(f.files.map((file) => [file.name, file]));
+      const larges = order.flatMap((name) => {
+        const file = byName.get(name);
+        return file ? [file] : [];
+      });
+      const rest = f.files.filter((file) => file.kind !== "large");
+      return { ...f, featured, order, files: [...larges, ...rest] };
+    });
+  }
 
   async function saveOrder(folder: GalleryFolder, featured: string, order: string[]) {
     setError("");
+    setFolders((prev) => showFolder(prev, folder.category, featured, order));
     try {
       await saveGalleryAlbum({ data: { category: folder.category, featured, order } });
-      const rows = await listGalleryFolders();
-      setFolders(rows);
       setNote(`Cover and order saved for ${galleryLabel(folder.category)}.`);
     } catch (err) {
+      try {
+        setFolders(await listGalleryFolders());
+      } catch {
+        /* keep optimistic order if relist fails */
+      }
       setError(err instanceof Error ? err.message : "Could not save order.");
     }
   }
 
   async function removePhoto(folder: GalleryFolder, name: string) {
-    if (!window.confirm(`Delete ${name} and its thumb from this gallery?`)) return;
+    const largeName = name.endsWith("-thumb.jpg") ? name.replace(/-thumb\.jpg$/i, ".jpg") : name;
+    const thumbName = largeName.replace(/\.jpe?g$/i, "-thumb.jpg");
     setError("");
+    setDeletePhase("working");
+    setFolders((prev) =>
+      prev.map((f) => {
+        if (f.category !== folder.category) return f;
+        const files = f.files.filter((file) => file.name !== largeName && file.name !== thumbName);
+        const order = f.order.filter((n) => n !== largeName);
+        return {
+          ...f,
+          files,
+          order,
+          count: order.length,
+          featured: f.featured === largeName ? order[0] ?? null : f.featured,
+        };
+      }),
+    );
     try {
-      const result = await deleteGalleryPhoto({ data: { category: folder.category, name } });
-      setFolders(result.folders);
-      setNote(`Deleted ${name}.`);
+      const result = await deleteGalleryPhoto({ data: { category: folder.category, name: largeName } });
+      setFolders((prev) => prev.map((f) => (f.category === result.folder.category ? result.folder : f)));
+      setDeleteProgress(100);
+      setNote(`Deleted ${largeName} and ${thumbName}.`);
+      await new Promise((r) => window.setTimeout(r, 250));
     } catch (err) {
+      try {
+        setFolders(await listGalleryFolders());
+      } catch {
+        /* keep optimistic list if relist fails */
+      }
       setError(err instanceof Error ? err.message : "Could not delete that photo.");
+    } finally {
+      setPendingDelete(null);
+      setDeletePhase(null);
     }
   }
 
@@ -216,8 +306,9 @@ function AdminPhotos() {
           return (
           <div key={folder.category} className="mt-6 border border-line bg-paper">
             <p className="border-b border-line bg-cream px-3 py-2 text-sm text-muted">
-              Cover photo is the hero on that service page. Use Move up / down to set the masonry
-              order, then Save order.
+              Cover photo is the hero on that service page. Use Top, Up, Down, or Bottom — 1, 2, 3
+              sit across the top, then the rest pack down in masonry.
+              {note ? <span className="mt-1 block text-pfeifer">{note}</span> : null}
             </p>
             <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -268,6 +359,18 @@ function AdminPhotos() {
                           className="min-h-10 px-2 text-xs uppercase tracking-wide disabled:opacity-40"
                           disabled={i === 0}
                           onClick={() => {
+                            const next = folder.order.filter((n) => n !== file.name);
+                            next.unshift(file.name);
+                            void saveOrder(folder, folder.featured ?? file.name, next);
+                          }}
+                        >
+                          Top
+                        </button>
+                        <button
+                          type="button"
+                          className="min-h-10 px-2 text-xs uppercase tracking-wide disabled:opacity-40"
+                          disabled={i === 0}
+                          onClick={() => {
                             const next = [...folder.order];
                             const at = next.indexOf(file.name);
                             if (at > 0) {
@@ -293,12 +396,34 @@ function AdminPhotos() {
                         >
                           Down
                         </button>
+                        <button
+                          type="button"
+                          className="min-h-10 px-2 text-xs uppercase tracking-wide disabled:opacity-40"
+                          disabled={i === larges.length - 1}
+                          onClick={() => {
+                            const next = folder.order.filter((n) => n !== file.name);
+                            next.push(file.name);
+                            void saveOrder(folder, folder.featured ?? file.name, next);
+                          }}
+                        >
+                          Bottom
+                        </button>
                       </td>
                       <td className="px-3 py-2">
                         <button
                           type="button"
-                          className="min-h-10 text-xs font-semibold uppercase tracking-wide text-danger hover:underline"
-                          onClick={() => void removePhoto(folder, file.name)}
+                          className="min-h-10 text-xs font-semibold uppercase tracking-wide text-danger hover:underline disabled:opacity-40"
+                          disabled={deletePhase !== null}
+                          onClick={() => {
+                            setError("");
+                            setPendingDelete({
+                              category: folder.category,
+                              name: file.name,
+                              thumbUrl: file.url.replace(/\.jpe?g$/i, "-thumb.jpg"),
+                              folder,
+                            });
+                            setDeletePhase("confirm");
+                          }}
                         >
                           Delete
                         </button>
@@ -318,6 +443,74 @@ function AdminPhotos() {
           Back to dashboard
         </Link>
       </p>
+
+      {pendingDelete && deletePhase ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-photo-title"
+          aria-busy={deletePhase === "working"}
+        >
+          <div className="w-full max-w-md border border-line bg-paper p-6 shadow-lg">
+            {deletePhase === "confirm" ? (
+              <>
+                <p className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                  Confirm delete
+                </p>
+                <h2 id="delete-photo-title" className="mt-2 font-display text-2xl text-ink">
+                  Delete this photo and its thumbnail?
+                </h2>
+                <img
+                  src={pendingDelete.thumbUrl}
+                  alt=""
+                  className="mt-4 h-32 w-full object-cover"
+                />
+                <p className="mt-3 break-all text-sm text-ink">{pendingDelete.name}</p>
+                <p className="mt-1 text-sm text-muted">
+                  This removes the large JPEG and the matching <code>-thumb.jpg</code>. It cannot be
+                  undone from this screen.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    className="min-h-12 bg-danger px-5 font-sans text-sm font-bold uppercase tracking-wide text-paper hover:opacity-90"
+                    onClick={() => void removePhoto(pendingDelete.folder, pendingDelete.name)}
+                  >
+                    Delete photo + thumb
+                  </button>
+                  <button
+                    type="button"
+                    className="min-h-12 border border-line px-5 font-sans text-sm font-bold uppercase tracking-wide hover:border-pfeifer"
+                    onClick={() => {
+                      setPendingDelete(null);
+                      setDeletePhase(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 id="delete-photo-title" className="font-display text-2xl text-ink">
+                  Deleting photo and thumbnail
+                </h2>
+                <p className="mt-2 text-sm text-muted">{pendingDelete.name}</p>
+                <div className="mt-6 h-3 w-full overflow-hidden bg-cream">
+                  <div
+                    className="h-full bg-pfeifer motion-safe:transition-[width] motion-safe:duration-200"
+                    style={{ width: `${deleteProgress}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                  {deleteProgress}% — please wait
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
     </AdminShell>
   );
 }

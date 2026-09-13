@@ -1,9 +1,10 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { RedirectToSignIn, UserButton } from "@/lib/auth/gates";
 import { signOut } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { isStaffEmail, staffEmailError } from "@/lib/staff-email";
+import { clearStaffSession, rememberCurrentStaffSession } from "@/lib/staff-session";
 import { Logo } from "@/components/logo";
 
 export function AdminShell({
@@ -15,6 +16,18 @@ export function AdminShell({
 }) {
   const { user, isPending } = useCurrentUserState();
   const allowed = Boolean(user && isStaffEmail(user.primaryEmail));
+  const hadStaff = useRef(false);
+
+  useEffect(() => {
+    if (user && allowed) {
+      hadStaff.current = true;
+      rememberCurrentStaffSession();
+    }
+    if (!isPending && !user && hadStaff.current) {
+      clearStaffSession();
+      hadStaff.current = false;
+    }
+  }, [user, allowed, isPending]);
 
   useEffect(() => {
     if (isPending || !user || allowed) return;

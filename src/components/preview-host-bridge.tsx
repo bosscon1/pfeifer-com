@@ -5,12 +5,11 @@
 
 import { useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
-import {
-  collectRoutePathsFromTree,
-  installPreviewHostBridge,
-} from "@/lib/preview-host-bridge";
+import { collectRoutePathsFromTree, installPreviewHostBridge } from "@/lib/preview-host-bridge";
+import { restoreStaffSession } from "@/lib/staff-session";
 
 export function PreviewHostBridge() {
+  restoreStaffSession();
   const router = useRouter();
 
   useEffect(() => {
