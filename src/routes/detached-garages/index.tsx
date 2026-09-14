@@ -18,7 +18,12 @@ export const Route = createFileRoute("/detached-garages/")({
     try {
       return await loadGalleryAlbum({ data: { category: "garages" } });
     } catch {
-      return { featuredUrl: "/images/garage.jpg", photos: [] as { src: string; fullSrc: string; alt: string; name: string }[] };
+      return {
+        featuredUrl: "/images/garage.jpg",
+        videoUrl: null as string | null,
+        overlay: 55,
+        photos: [] as { src: string; fullSrc: string; alt: string; name: string }[],
+      };
     }
   },
   component: Page,
@@ -29,6 +34,8 @@ function Page() {
   return (
     <ServicePage
       image={album.featuredUrl || "/images/garage.jpg"}
+      video={album.videoUrl || undefined}
+      overlay={album.overlay}
       eyebrow="Outbuildings"
       title="Detached Garages by Pfeifer"
       lede="More storage, a shop, or a bonus room — without crowding the house you already have."

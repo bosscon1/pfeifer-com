@@ -2,12 +2,16 @@ import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminShell } from "@/components/admin-shell";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { GALLERY_CATEGORIES, galleryLabel } from "@/lib/gallery";
+import { isLivePfeiferHost, phpBridgeReady, phpSaveGallerySettings } from "@/lib/php-bridge";
+import { LiveSetupNotice } from "@/components/live-setup-notice";
 import {
   deleteGalleryPhoto,
+  deleteGalleryVideo,
   listGalleryFolders,
   saveGalleryAlbum,
+  saveGalleryHero,
   uploadGalleryPhotos,
+  uploadGalleryVideo,
   type GalleryFolder,
 } from "@/lib/gallery.functions";
 
@@ -37,9 +41,11 @@ function AdminPhotos() {
   const [city, setCity] = useState("");
   const [what, setWhat] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [busy, setBusy] = useState<"load" | "upload" | null>("load");
+  const [busy, setBusy] = useState<"load" | "upload" | "hero" | "video" | null>("load");
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
+  const [overlay, setOverlay] = useState(55);
+  const [liveReady, setLiveReady] = useState(!isLivePfeiferHost());
   const [pendingDelete, setPendingDelete] = useState<{
     category: string;
     name: string;
@@ -64,6 +70,11 @@ function AdminPhotos() {
       /* ignore */
     }
   }, [openFolder]);
+
+  useEffect(() => {
+    const row = folders.find((f) => f.category === openFolder);
+    if (row) setOverlay(row.overlay);
+  }, [openFolder, folders]);
 
   useEffect(() => {
     if (deletePhase !== "working") {
@@ -122,10 +133,24 @@ function AdminPhotos() {
   }
 
   async function saveOrder(folder: GalleryFolder, featured: string, order: string[]) {
+    if (isLivePfeiferHost() && !liveReady) {
+      setError("Admin saves are disabled until SiteGround setup passes Verify setup.");
+      return;
+    }
     setError("");
     setFolders((prev) => showFolder(prev, folder.category, featured, order));
     try {
-      await saveGalleryAlbum({ data: { category: folder.category, featured, order } });
+      if (isLivePfeiferHost()) {
+        await phpSaveGallerySettings({
+          category: folder.category,
+          featured,
+          order,
+          overlay: folder.overlay,
+          video: folder.videoName,
+        });
+      } else {
+        await saveGalleryAlbum({ data: { category: folder.category, featured, order } });
+      }
       setNote(`Cover and order saved for ${galleryLabel(folder.category)}.`);
     } catch (err) {
       try {
@@ -134,6 +159,85 @@ function AdminPhotos() {
         /* keep optimistic order if relist fails */
       }
       setError(err instanceof Error ? err.message : "Could not save order.");
+    }
+  }
+
+  async function saveHero(folder: GalleryFolder, next: number) {
+    if (isLivePfeiferHost() && !liveReady) {
+      setError("Admin saves are disabled until SiteGround setup passes Verify setup.");
+      return;
+    }
+    const value = Math.max(0, Math.min(80, Math.round(next)));
+    setOverlay(value);
+    setFolders((prev) => prev.map((f) => (f.category === folder.category ? { ...f, overlay: value } : f)));
+    setError("");
+    try {
+      if (isLivePfeiferHost()) {
+        await phpSaveGallerySettings({
+          category: folder.category,
+          featured: folder.featured,
+          order: folder.order,
+          overlay: value,
+          video: folder.videoName,
+        });
+      } else {
+        const row = await saveGalleryHero({ data: { category: folder.category, overlay: value } });
+        setFolders((prev) => prev.map((f) => (f.category === row.category ? row : f)));
+      }
+      setNote(`Hero darkness saved for ${galleryLabel(folder.category)}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save hero darkness.");
+    }
+  }
+
+  async function onHeroVideo(folder: GalleryFolder, list: FileList | null) {
+    const file = list?.[0];
+    if (!file) return;
+    if (file.size > 18 * 1024 * 1024) {
+      setError("Keep the hero video under 18 MB.");
+      return;
+    }
+    setBusy("video");
+    setError("");
+    try {
+      const data = await readAsDataUrl(file);
+      const row = await uploadGalleryVideo({ data: { category: folder.category, name: file.name, data } });
+      setFolders((prev) => prev.map((f) => (f.category === row.category ? row : f)));
+      setNote(`Hero video saved for ${galleryLabel(folder.category)}. Cover stays the poster.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save that video.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function removeHeroVideo(folder: GalleryFolder) {
+    if (!window.confirm("Remove the hero video from this page? The cover photo stays.")) return;
+    setBusy("video");
+    setError("");
+    try {
+      if (isLivePfeiferHost()) {
+        await phpSaveGallerySettings({
+          category: folder.category,
+          featured: folder.featured,
+          order: folder.order,
+          overlay: folder.overlay,
+          video: null,
+        });
+        setFolders((prev) =>
+          prev.map((f) =>
+            f.category === folder.category ? { ...f, videoName: null, videoUrl: null } : f,
+          ),
+        );
+      } else {
+        const row = await deleteGalleryVideo({ data: { category: folder.category } });
+        setFolders((prev) => prev.map((f) => (f.category === row.category ? row : f)));
+      }
+      setNote(`Hero video removed from ${galleryLabel(folder.category)}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not remove that video.");
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -210,7 +314,10 @@ function AdminPhotos() {
 
   return (
     <AdminShell title="Photo galleries">
-      <p className="max-w-2xl text-sm text-muted">
+      <div className="max-w-2xl">
+        <LiveSetupNotice onStatus={(row) => setLiveReady(!isLivePfeiferHost() || phpBridgeReady(row))} />
+      </div>
+      <p className="mt-6 max-w-2xl text-sm text-muted">
         Upload job photos here. Each file becomes a large JPEG (long edge 1600px, watermark) and a
         clean thumb (800px). Files land in{" "}
         <code>public/images/galleries/&#123;folder&#125;/</code> — the same tree you will FTP to
@@ -306,10 +413,91 @@ function AdminPhotos() {
           return (
           <div key={folder.category} className="mt-6 border border-line bg-paper">
             <p className="border-b border-line bg-cream px-3 py-2 text-sm text-muted">
-              Cover photo is the hero on that service page. Use Top, Up, Down, or Bottom — 1, 2, 3
-              sit across the top, then the rest pack down in masonry.
+              Cover photo is the hero on that service page. Darkness is the wash over the cover (and
+              video). Use Top, Up, Down, or Bottom — 1, 2, 3 sit across the top, then the rest pack
+              down in masonry.
               {note ? <span className="mt-1 block text-pfeifer">{note}</span> : null}
             </p>
+            <div className="border-b border-line p-4">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                Hero
+              </p>
+              <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,16rem)_1fr]">
+                <div className="relative min-h-40 overflow-hidden bg-charcoal">
+                  {folder.featured ? (
+                    <img
+                      src={folder.files.find((f) => f.name === folder.featured)?.url ?? ""}
+                      alt=""
+                      className="absolute inset-0 size-full object-cover"
+                    />
+                  ) : null}
+                  <div
+                    className="absolute inset-0"
+                    style={{ backgroundColor: `rgba(28, 31, 36, ${overlay / 100})` }}
+                  />
+                  <p className="relative grid h-40 place-items-center px-3 text-center font-display text-lg text-paper">
+                    {galleryLabel(folder.category)}
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <label className="block text-sm">
+                    Hero darkness — {overlay}%
+                    <input
+                      type="range"
+                      min={0}
+                      max={80}
+                      step={1}
+                      value={overlay}
+                      className="mt-2 w-full accent-pfeifer"
+                      disabled={busy !== null}
+                      onChange={(e) => setOverlay(Number(e.target.value))}
+                      onPointerUp={(e) => void saveHero(folder, Number((e.target as HTMLInputElement).value))}
+                      onKeyUp={(e) => void saveHero(folder, Number((e.target as HTMLInputElement).value))}
+                    />
+                    <span className="mt-1 block text-xs text-muted">
+                      0 is a bright photo. 80 is almost black. Title stays on top.
+                    </span>
+                  </label>
+                  <div>
+                    <p className="text-sm">Hero video (optional)</p>
+                    <p className="mt-1 text-xs text-muted">
+                      MP4, landscape, under 18 MB, no sound. Cover photo is the poster if the video
+                      cannot play.
+                      {folder.videoName ? (
+                        <span className="mt-1 block text-pfeifer">On: {folder.videoName}</span>
+                      ) : (
+                        <span className="mt-1 block">No video — cover photo only.</span>
+                      )}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <label className="inline-flex min-h-10 cursor-pointer items-center border border-line px-3 text-xs font-semibold uppercase tracking-wide hover:border-pfeifer">
+                        {busy === "video" ? "Saving…" : folder.videoName ? "Replace video" : "Add video"}
+                        <input
+                          type="file"
+                          accept="video/mp4"
+                          className="sr-only"
+                          disabled={busy !== null}
+                          onChange={(e) => {
+                            void onHeroVideo(folder, e.target.files);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                      {folder.videoName ? (
+                        <button
+                          type="button"
+                          className="min-h-10 px-3 text-xs font-semibold uppercase tracking-wide text-danger hover:underline disabled:opacity-40"
+                          disabled={busy !== null}
+                          onClick={() => void removeHeroVideo(folder)}
+                        >
+                          Remove video
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-cream text-xs uppercase tracking-wide text-muted">

@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ServicePage } from "@/components/service-page";
+import { loadGalleryAlbum } from "@/lib/gallery.functions";
+
+const FALLBACK = [
+  { src: "/images/porch.jpg", alt: "Covered porch in Peachtree City, GA" },
+  { src: "/images/hero-porch.jpg", alt: "Porch interior with fireplace and seating" },
+  { src: "/images/hero-deck.jpg", alt: "Deck connected to a covered porch" },
+];
 
 export const Route = createFileRoute("/covered-porches-by-pfeifer/")({
   head: () => ({
@@ -13,14 +20,28 @@ export const Route = createFileRoute("/covered-porches-by-pfeifer/")({
     ],
     links: [{ rel: "canonical", href: "https://pfeiferbuild.com/covered-porches-by-pfeifer/" }],
   }),
+  loader: async () => {
+    try {
+      return await loadGalleryAlbum({ data: { category: "porches" } });
+    } catch {
+      return {
+        featuredUrl: "/images/hero-porch.jpg",
+        videoUrl: "/videos/hero-porch.mp4" as string | null,
+        overlay: 55,
+        photos: [] as { src: string; fullSrc: string; alt: string; name: string }[],
+      };
+    }
+  },
   component: Page,
 });
 
 function Page() {
+  const album = Route.useLoaderData();
   return (
     <ServicePage
-      image="/images/hero-porch.jpg"
-      video="/videos/hero-porch.mp4"
+      image={album.featuredUrl || "/images/hero-porch.jpg"}
+      video={album.videoUrl || undefined}
+      overlay={album.overlay}
       eyebrow="Outdoor living"
       title="Covered Porches by Pfeifer"
       lede="Build a covered or screened porch you will actually sit on — shade, rain, and fewer gnats, tied into the house you already own."
@@ -38,11 +59,7 @@ function Page() {
           body: "We produce drawings for HOA, city, or county submittal. Fireplace, tongue-and-groove ceilings, LED, heaters, fans, and TV outlets are part of the build, not a change-order at the end. Trim and flashing that last in Georgia weather.",
         },
       ]}
-      photos={[
-        { src: "/images/porch.jpg", alt: "Covered porch in Peachtree City, GA" },
-        { src: "/images/hero-porch.jpg", alt: "Porch interior with fireplace and seating" },
-        { src: "/images/hero-deck.jpg", alt: "Deck connected to a covered porch" },
-      ]}
+      photos={album.photos.length ? album.photos : FALLBACK}
     />
   );
 }

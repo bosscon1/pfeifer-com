@@ -15,6 +15,7 @@ const portfolioLinks = [
   { href: "/covered-porches-by-pfeifer/", label: "Porches" },
   { href: "/kitchens/", label: "Kitchens" },
   { href: "/detached-garages/", label: "Garages" },
+  { href: "/pool-houses-by-pfeifer/", label: "Pool houses" },
 ];
 
 function Drop({

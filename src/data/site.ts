@@ -72,6 +72,12 @@ export const SERVICES = [
     image: "/images/porch.jpg",
     blurb: "Covered and screened porches, fireplaces, and outdoor living that matches the house.",
   },
+  {
+    href: "/pool-houses-by-pfeifer/",
+    title: "Pool houses",
+    image: "/images/poolhouses/pfeifer-peachtree-city-pool-house-01.jpg",
+    blurb: "Cabanas, pool baths, outdoor kitchens, and pool houses that match the house.",
+  },
 ] as const;
 
 export const CITIES = [

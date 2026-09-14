@@ -10,9 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as YearIndexRouteImport } from './routes/$year/index'
 import { Route as AboutIndexRouteImport } from './routes/about/index'
 import { Route as AddingAPergolaIndexRouteImport } from './routes/adding-a-pergola/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminContactRouteImport } from './routes/admin/contact'
+import { Route as AdminPhotosRouteImport } from './routes/admin/photos'
+import { Route as AdminRedirectsRouteImport } from './routes/admin/redirects'
+import { Route as AdminSignInRouteImport } from './routes/admin/sign-in'
 import { Route as AttachedVsDetachedIndexRouteImport } from './routes/attached-vs-detached/index'
 import { Route as BasementFinishingIdeasIndexRouteImport } from './routes/basement-finishing-ideas/index'
 import { Route as BasementFinishingInPeachtreeCityIndexRouteImport } from './routes/basement-finishing-in-peachtree-city/index'
@@ -83,6 +89,7 @@ import { Route as PeachtreeCityHomeownersGuideIndexRouteImport } from './routes/
 import { Route as PerfectDetachedGarageIndexRouteImport } from './routes/perfect-detached-garage/index'
 import { Route as PerfectDownstairsLivingIndexRouteImport } from './routes/perfect-downstairs-living/index'
 import { Route as PfeiferDoesRepairsIndexRouteImport } from './routes/pfeifer-does-repairs/index'
+import { Route as PoolHousesByPfeiferIndexRouteImport } from './routes/pool-houses-by-pfeifer/index'
 import { Route as PoppingTheTopIndexRouteImport } from './routes/popping-the-top/index'
 import { Route as PortfolioIndexRouteImport } from './routes/portfolio/index'
 import { Route as RefugeInKedronHillsIndexRouteImport } from './routes/refuge-in-kedron-hills/index'
@@ -112,6 +119,7 @@ import { Route as WhyHireLocalIndexRouteImport } from './routes/why-hire-local/i
 import { Route as WineCellarIndexRouteImport } from './routes/wine-cellar/index'
 import { Route as YourDreamPorchIndexRouteImport } from './routes/your-dream-porch/index'
 import { Route as YearMonthIndexRouteImport } from './routes/$year/$month/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as CategoryBlogpostsIndexRouteImport } from './routes/category/blogposts/index'
 import { Route as CategoryServicesIndexRouteImport } from './routes/category/services/index'
 import { Route as CategorySuppliersIndexRouteImport } from './routes/category/suppliers/index'
@@ -122,6 +130,11 @@ import { Route as BlogTopicTagIndexRouteImport } from './routes/blog/topic/$tag/
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const YearIndexRoute = YearIndexRouteImport.update({
@@ -137,6 +150,31 @@ const AboutIndexRoute = AboutIndexRouteImport.update({
 const AddingAPergolaIndexRoute = AddingAPergolaIndexRouteImport.update({
   id: '/adding-a-pergola/',
   path: '/adding-a-pergola/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminContactRoute = AdminContactRouteImport.update({
+  id: '/admin/contact',
+  path: '/admin/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPhotosRoute = AdminPhotosRouteImport.update({
+  id: '/admin/photos',
+  path: '/admin/photos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRedirectsRoute = AdminRedirectsRouteImport.update({
+  id: '/admin/redirects',
+  path: '/admin/redirects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSignInRoute = AdminSignInRouteImport.update({
+  id: '/admin/sign-in',
+  path: '/admin/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AttachedVsDetachedIndexRoute = AttachedVsDetachedIndexRouteImport.update({
@@ -511,6 +549,12 @@ const PfeiferDoesRepairsIndexRoute = PfeiferDoesRepairsIndexRouteImport.update({
   path: '/pfeifer-does-repairs/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PoolHousesByPfeiferIndexRoute =
+  PoolHousesByPfeiferIndexRouteImport.update({
+    id: '/pool-houses-by-pfeifer/',
+    path: '/pool-houses-by-pfeifer/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PoppingTheTopIndexRoute = PoppingTheTopIndexRouteImport.update({
   id: '/popping-the-top/',
   path: '/popping-the-top/',
@@ -665,6 +709,11 @@ const YearMonthIndexRoute = YearMonthIndexRouteImport.update({
   path: '/$year/$month/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoryBlogpostsIndexRoute = CategoryBlogpostsIndexRouteImport.update({
   id: '/category/blogposts/',
   path: '/category/blogposts/',
@@ -698,9 +747,15 @@ const BlogTopicTagIndexRoute = BlogTopicTagIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin/contact': typeof AdminContactRoute
+  '/admin/photos': typeof AdminPhotosRoute
+  '/admin/redirects': typeof AdminRedirectsRoute
+  '/admin/sign-in': typeof AdminSignInRoute
   '/$year/': typeof YearIndexRoute
   '/about/': typeof AboutIndexRoute
   '/adding-a-pergola/': typeof AddingAPergolaIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/attached-vs-detached/': typeof AttachedVsDetachedIndexRoute
   '/basement-finishing-ideas/': typeof BasementFinishingIdeasIndexRoute
   '/basement-finishing-in-peachtree-city/': typeof BasementFinishingInPeachtreeCityIndexRoute
@@ -771,6 +826,7 @@ export interface FileRoutesByFullPath {
   '/perfect-detached-garage/': typeof PerfectDetachedGarageIndexRoute
   '/perfect-downstairs-living/': typeof PerfectDownstairsLivingIndexRoute
   '/pfeifer-does-repairs/': typeof PfeiferDoesRepairsIndexRoute
+  '/pool-houses-by-pfeifer/': typeof PoolHousesByPfeiferIndexRoute
   '/popping-the-top/': typeof PoppingTheTopIndexRoute
   '/portfolio/': typeof PortfolioIndexRoute
   '/refuge-in-kedron-hills/': typeof RefugeInKedronHillsIndexRoute
@@ -799,6 +855,7 @@ export interface FileRoutesByFullPath {
   '/why-hire-local/': typeof WhyHireLocalIndexRoute
   '/wine-cellar/': typeof WineCellarIndexRoute
   '/your-dream-porch/': typeof YourDreamPorchIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/$year/$month/': typeof YearMonthIndexRoute
   '/category/blogposts/': typeof CategoryBlogpostsIndexRoute
   '/category/services/': typeof CategoryServicesIndexRoute
@@ -809,9 +866,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin/contact': typeof AdminContactRoute
+  '/admin/photos': typeof AdminPhotosRoute
+  '/admin/redirects': typeof AdminRedirectsRoute
+  '/admin/sign-in': typeof AdminSignInRoute
   '/$year': typeof YearIndexRoute
   '/about': typeof AboutIndexRoute
   '/adding-a-pergola': typeof AddingAPergolaIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/attached-vs-detached': typeof AttachedVsDetachedIndexRoute
   '/basement-finishing-ideas': typeof BasementFinishingIdeasIndexRoute
   '/basement-finishing-in-peachtree-city': typeof BasementFinishingInPeachtreeCityIndexRoute
@@ -882,6 +945,7 @@ export interface FileRoutesByTo {
   '/perfect-detached-garage': typeof PerfectDetachedGarageIndexRoute
   '/perfect-downstairs-living': typeof PerfectDownstairsLivingIndexRoute
   '/pfeifer-does-repairs': typeof PfeiferDoesRepairsIndexRoute
+  '/pool-houses-by-pfeifer': typeof PoolHousesByPfeiferIndexRoute
   '/popping-the-top': typeof PoppingTheTopIndexRoute
   '/portfolio': typeof PortfolioIndexRoute
   '/refuge-in-kedron-hills': typeof RefugeInKedronHillsIndexRoute
@@ -910,6 +974,7 @@ export interface FileRoutesByTo {
   '/why-hire-local': typeof WhyHireLocalIndexRoute
   '/wine-cellar': typeof WineCellarIndexRoute
   '/your-dream-porch': typeof YourDreamPorchIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/$year/$month': typeof YearMonthIndexRoute
   '/category/blogposts': typeof CategoryBlogpostsIndexRoute
   '/category/services': typeof CategoryServicesIndexRoute
@@ -921,9 +986,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin/contact': typeof AdminContactRoute
+  '/admin/photos': typeof AdminPhotosRoute
+  '/admin/redirects': typeof AdminRedirectsRoute
+  '/admin/sign-in': typeof AdminSignInRoute
   '/$year/': typeof YearIndexRoute
   '/about/': typeof AboutIndexRoute
   '/adding-a-pergola/': typeof AddingAPergolaIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/attached-vs-detached/': typeof AttachedVsDetachedIndexRoute
   '/basement-finishing-ideas/': typeof BasementFinishingIdeasIndexRoute
   '/basement-finishing-in-peachtree-city/': typeof BasementFinishingInPeachtreeCityIndexRoute
@@ -994,6 +1065,7 @@ export interface FileRoutesById {
   '/perfect-detached-garage/': typeof PerfectDetachedGarageIndexRoute
   '/perfect-downstairs-living/': typeof PerfectDownstairsLivingIndexRoute
   '/pfeifer-does-repairs/': typeof PfeiferDoesRepairsIndexRoute
+  '/pool-houses-by-pfeifer/': typeof PoolHousesByPfeiferIndexRoute
   '/popping-the-top/': typeof PoppingTheTopIndexRoute
   '/portfolio/': typeof PortfolioIndexRoute
   '/refuge-in-kedron-hills/': typeof RefugeInKedronHillsIndexRoute
@@ -1022,6 +1094,7 @@ export interface FileRoutesById {
   '/why-hire-local/': typeof WhyHireLocalIndexRoute
   '/wine-cellar/': typeof WineCellarIndexRoute
   '/your-dream-porch/': typeof YourDreamPorchIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/$year/$month/': typeof YearMonthIndexRoute
   '/category/blogposts/': typeof CategoryBlogpostsIndexRoute
   '/category/services/': typeof CategoryServicesIndexRoute
@@ -1034,9 +1107,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
+    | '/admin/contact'
+    | '/admin/photos'
+    | '/admin/redirects'
+    | '/admin/sign-in'
     | '/$year/'
     | '/about/'
     | '/adding-a-pergola/'
+    | '/admin/'
     | '/attached-vs-detached/'
     | '/basement-finishing-ideas/'
     | '/basement-finishing-in-peachtree-city/'
@@ -1107,6 +1186,7 @@ export interface FileRouteTypes {
     | '/perfect-detached-garage/'
     | '/perfect-downstairs-living/'
     | '/pfeifer-does-repairs/'
+    | '/pool-houses-by-pfeifer/'
     | '/popping-the-top/'
     | '/portfolio/'
     | '/refuge-in-kedron-hills/'
@@ -1135,6 +1215,7 @@ export interface FileRouteTypes {
     | '/why-hire-local/'
     | '/wine-cellar/'
     | '/your-dream-porch/'
+    | '/api/auth/$'
     | '/$year/$month/'
     | '/category/blogposts/'
     | '/category/services/'
@@ -1145,9 +1226,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/admin/contact'
+    | '/admin/photos'
+    | '/admin/redirects'
+    | '/admin/sign-in'
     | '/$year'
     | '/about'
     | '/adding-a-pergola'
+    | '/admin'
     | '/attached-vs-detached'
     | '/basement-finishing-ideas'
     | '/basement-finishing-in-peachtree-city'
@@ -1218,6 +1305,7 @@ export interface FileRouteTypes {
     | '/perfect-detached-garage'
     | '/perfect-downstairs-living'
     | '/pfeifer-does-repairs'
+    | '/pool-houses-by-pfeifer'
     | '/popping-the-top'
     | '/portfolio'
     | '/refuge-in-kedron-hills'
@@ -1246,6 +1334,7 @@ export interface FileRouteTypes {
     | '/why-hire-local'
     | '/wine-cellar'
     | '/your-dream-porch'
+    | '/api/auth/$'
     | '/$year/$month'
     | '/category/blogposts'
     | '/category/services'
@@ -1256,9 +1345,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/login'
+    | '/admin/contact'
+    | '/admin/photos'
+    | '/admin/redirects'
+    | '/admin/sign-in'
     | '/$year/'
     | '/about/'
     | '/adding-a-pergola/'
+    | '/admin/'
     | '/attached-vs-detached/'
     | '/basement-finishing-ideas/'
     | '/basement-finishing-in-peachtree-city/'
@@ -1329,6 +1424,7 @@ export interface FileRouteTypes {
     | '/perfect-detached-garage/'
     | '/perfect-downstairs-living/'
     | '/pfeifer-does-repairs/'
+    | '/pool-houses-by-pfeifer/'
     | '/popping-the-top/'
     | '/portfolio/'
     | '/refuge-in-kedron-hills/'
@@ -1357,6 +1453,7 @@ export interface FileRouteTypes {
     | '/why-hire-local/'
     | '/wine-cellar/'
     | '/your-dream-porch/'
+    | '/api/auth/$'
     | '/$year/$month/'
     | '/category/blogposts/'
     | '/category/services/'
@@ -1368,9 +1465,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  AdminContactRoute: typeof AdminContactRoute
+  AdminPhotosRoute: typeof AdminPhotosRoute
+  AdminRedirectsRoute: typeof AdminRedirectsRoute
+  AdminSignInRoute: typeof AdminSignInRoute
   YearIndexRoute: typeof YearIndexRoute
   AboutIndexRoute: typeof AboutIndexRoute
   AddingAPergolaIndexRoute: typeof AddingAPergolaIndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   AttachedVsDetachedIndexRoute: typeof AttachedVsDetachedIndexRoute
   BasementFinishingIdeasIndexRoute: typeof BasementFinishingIdeasIndexRoute
   BasementFinishingInPeachtreeCityIndexRoute: typeof BasementFinishingInPeachtreeCityIndexRoute
@@ -1441,6 +1544,7 @@ export interface RootRouteChildren {
   PerfectDetachedGarageIndexRoute: typeof PerfectDetachedGarageIndexRoute
   PerfectDownstairsLivingIndexRoute: typeof PerfectDownstairsLivingIndexRoute
   PfeiferDoesRepairsIndexRoute: typeof PfeiferDoesRepairsIndexRoute
+  PoolHousesByPfeiferIndexRoute: typeof PoolHousesByPfeiferIndexRoute
   PoppingTheTopIndexRoute: typeof PoppingTheTopIndexRoute
   PortfolioIndexRoute: typeof PortfolioIndexRoute
   RefugeInKedronHillsIndexRoute: typeof RefugeInKedronHillsIndexRoute
@@ -1469,6 +1573,7 @@ export interface RootRouteChildren {
   WhyHireLocalIndexRoute: typeof WhyHireLocalIndexRoute
   WineCellarIndexRoute: typeof WineCellarIndexRoute
   YourDreamPorchIndexRoute: typeof YourDreamPorchIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   YearMonthIndexRoute: typeof YearMonthIndexRoute
   CategoryBlogpostsIndexRoute: typeof CategoryBlogpostsIndexRoute
   CategoryServicesIndexRoute: typeof CategoryServicesIndexRoute
@@ -1485,6 +1590,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$year/': {
@@ -1506,6 +1618,41 @@ declare module '@tanstack/react-router' {
       path: '/adding-a-pergola'
       fullPath: '/adding-a-pergola/'
       preLoaderRoute: typeof AddingAPergolaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/contact': {
+      id: '/admin/contact'
+      path: '/admin/contact'
+      fullPath: '/admin/contact'
+      preLoaderRoute: typeof AdminContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/photos': {
+      id: '/admin/photos'
+      path: '/admin/photos'
+      fullPath: '/admin/photos'
+      preLoaderRoute: typeof AdminPhotosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/redirects': {
+      id: '/admin/redirects'
+      path: '/admin/redirects'
+      fullPath: '/admin/redirects'
+      preLoaderRoute: typeof AdminRedirectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/sign-in': {
+      id: '/admin/sign-in'
+      path: '/admin/sign-in'
+      fullPath: '/admin/sign-in'
+      preLoaderRoute: typeof AdminSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/attached-vs-detached/': {
@@ -1998,6 +2145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PfeiferDoesRepairsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pool-houses-by-pfeifer/': {
+      id: '/pool-houses-by-pfeifer/'
+      path: '/pool-houses-by-pfeifer'
+      fullPath: '/pool-houses-by-pfeifer/'
+      preLoaderRoute: typeof PoolHousesByPfeiferIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/popping-the-top/': {
       id: '/popping-the-top/'
       path: '/popping-the-top'
@@ -2201,6 +2355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YearMonthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/category/blogposts/': {
       id: '/category/blogposts/'
       path: '/category/blogposts'
@@ -2248,9 +2409,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  AdminContactRoute: AdminContactRoute,
+  AdminPhotosRoute: AdminPhotosRoute,
+  AdminRedirectsRoute: AdminRedirectsRoute,
+  AdminSignInRoute: AdminSignInRoute,
   YearIndexRoute: YearIndexRoute,
   AboutIndexRoute: AboutIndexRoute,
   AddingAPergolaIndexRoute: AddingAPergolaIndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
   AttachedVsDetachedIndexRoute: AttachedVsDetachedIndexRoute,
   BasementFinishingIdeasIndexRoute: BasementFinishingIdeasIndexRoute,
   BasementFinishingInPeachtreeCityIndexRoute:
@@ -2323,6 +2490,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfectDetachedGarageIndexRoute: PerfectDetachedGarageIndexRoute,
   PerfectDownstairsLivingIndexRoute: PerfectDownstairsLivingIndexRoute,
   PfeiferDoesRepairsIndexRoute: PfeiferDoesRepairsIndexRoute,
+  PoolHousesByPfeiferIndexRoute: PoolHousesByPfeiferIndexRoute,
   PoppingTheTopIndexRoute: PoppingTheTopIndexRoute,
   PortfolioIndexRoute: PortfolioIndexRoute,
   RefugeInKedronHillsIndexRoute: RefugeInKedronHillsIndexRoute,
@@ -2354,6 +2522,7 @@ const rootRouteChildren: RootRouteChildren = {
   WhyHireLocalIndexRoute: WhyHireLocalIndexRoute,
   WineCellarIndexRoute: WineCellarIndexRoute,
   YourDreamPorchIndexRoute: YourDreamPorchIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   YearMonthIndexRoute: YearMonthIndexRoute,
   CategoryBlogpostsIndexRoute: CategoryBlogpostsIndexRoute,
   CategoryServicesIndexRoute: CategoryServicesIndexRoute,

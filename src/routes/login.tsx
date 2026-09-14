@@ -8,6 +8,8 @@ import {
   rememberStaffSession,
   tokenFromAuthData,
 } from "@/lib/staff-session";
+import { isLivePfeiferHost, phpBridgeReady, phpBridgeStatus } from "@/lib/php-bridge";
+import { LiveSetupNotice } from "@/components/live-setup-notice";
 import { Logo } from "@/components/logo";
 
 export const Route = createFileRoute("/login")({
@@ -28,7 +30,28 @@ function Login() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [phpStatus, setPhpStatus] = useState<Awaited<ReturnType<typeof phpBridgeStatus>>>(null);
+  const [phpReady, setPhpReady] = useState(false);
+  const [phpUser, setPhpUser] = useState(false);
   const staffUser = Boolean(user && isStaffEmail(user.primaryEmail));
+  const liveHost = isLivePfeiferHost();
+  const liveSetupOk = !liveHost || phpBridgeReady(phpStatus);
+
+  useEffect(() => {
+    if (!liveHost) return;
+    let live = true;
+    void phpBridgeStatus().then((row) => {
+      if (!live) return;
+      setPhpStatus(row);
+      setPhpUser(Boolean(row?.user));
+      setPhpReady(true);
+    }).catch(() => {
+      if (live) setPhpReady(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [liveHost]);
 
   useEffect(() => {
     if (isPending || !user || staffUser) return;
@@ -36,7 +59,7 @@ function Login() {
     void signOut().catch(() => {});
   }, [isPending, user, staffUser]);
 
-  if (!isPending && staffUser) return <Navigate to="/admin/" />;
+  if ((!isPending && staffUser) || phpUser) return <Navigate to="/admin/" />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -76,7 +99,7 @@ function Login() {
 
   return (
     <main className="grid min-h-dvh place-items-center bg-cream px-4 py-12">
-      <div className="w-full max-w-md border border-line bg-paper p-8 shadow-sm">
+      <div className={`w-full border border-line bg-paper p-8 shadow-sm ${liveHost ? "max-w-xl" : "max-w-md"}`}>
         <div className="flex justify-center bg-pfeifer px-4 py-3">
           <Logo compact />
         </div>
@@ -93,8 +116,31 @@ function Login() {
           or call the office.
         </p>
 
-        {isPending ? (
+        {isPending || (liveHost && !phpReady) ? (
           <div className="mt-8 h-24 animate-pulse bg-cream" />
+        ) : liveHost ? (
+          <>
+            <div className="mt-6">
+              <LiveSetupNotice onStatus={(row) => { setPhpStatus(row); setPhpUser(Boolean(row?.user)); }} />
+            </div>
+            {liveSetupOk ? (
+              <>
+                <a
+                  href="/api/bridge/google-login.php"
+                  className="mt-6 flex min-h-12 items-center justify-center bg-pfeifer px-4 font-sans text-sm font-bold uppercase tracking-wide text-paper no-underline hover:bg-pfeifer-dark"
+                >
+                  Continue with Google
+                </a>
+                <p className="mt-2 text-xs text-muted">
+                  Use an @{STAFF_EMAIL_DOMAIN} Google account. Settings save to MySQL on this server.
+                </p>
+              </>
+            ) : (
+              <p className="mt-4 text-sm text-muted">
+                Google sign-in stays off until every check above passes.
+              </p>
+            )}
+          </>
         ) : authEnabled ? (
           <>
             <div className="mt-6 space-y-2">

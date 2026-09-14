@@ -9,6 +9,7 @@ export const GALLERY_CATEGORIES = [
   { id: "basements", label: "Basement Remodels" },
   { id: "commercial", label: "Commercial" },
   { id: "porches", label: "Covered Porches" },
+  { id: "poolhouses", label: "Pool Houses" },
   { id: "pergolas", label: "Pergolas" },
   { id: "outdoor-spaces", label: "Outdoor Spaces" },
   { id: "fireplaces", label: "Fireplaces" },

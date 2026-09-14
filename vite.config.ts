@@ -127,7 +127,7 @@ export default defineConfig(({ command, isPreview }) => ({
     watch: {
       // Staff photo admin writes/deletes under public/images. Watching those
       // files full-reloads the Grok preview mid-request and aborts the save.
-      ignored: ["**/gallery.json", "**/public/images/**"],
+      ignored: ["**/gallery.json", "**/public/images/**", "**/public/videos/**"],
     },
   },
   preview: {

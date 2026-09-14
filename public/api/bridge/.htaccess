@@ -1,0 +1,9 @@
+<Files "config.php">
+  Require all denied
+</Files>
+<Files "config.sample.php">
+  Require all denied
+</Files>
+<Files "lib.php">
+  Require all denied
+</Files>

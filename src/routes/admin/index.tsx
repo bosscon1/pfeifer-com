@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminShell } from "@/components/admin-shell";
+import { LiveSetupNotice } from "@/components/live-setup-notice";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -14,7 +15,10 @@ export const Route = createFileRoute("/admin/")({
 function AdminHome() {
   return (
     <AdminShell title="Office dashboard">
-      <p className="max-w-2xl text-muted">
+      <div className="max-w-2xl">
+        <LiveSetupNotice />
+      </div>
+      <p className="mt-6 max-w-2xl text-muted">
         Change the listed office details here. Reviews, homepage lines, and team photos will be
         added next. The public WordPress site is not affected until you say it is time to cut over.
       </p>

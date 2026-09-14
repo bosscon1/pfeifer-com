@@ -7,6 +7,7 @@ import type { LightboxPhoto } from "@/components/lightbox";
 export function ServicePage({
   image,
   video,
+  overlay = 55,
   eyebrow,
   title,
   lede,
@@ -16,6 +17,7 @@ export function ServicePage({
 }: {
   image: string;
   video?: string;
+  overlay?: number;
   eyebrow?: string;
   title: string;
   lede: string;
@@ -25,7 +27,15 @@ export function ServicePage({
 }) {
   return (
     <main>
-      <PageHero image={image} video={video} alt={title} eyebrow={eyebrow} title={title} lede={lede} />
+      <PageHero
+        image={image}
+        video={video}
+        overlay={overlay}
+        alt={title}
+        eyebrow={eyebrow}
+        title={title}
+        lede={lede}
+      />
       <article className="mx-auto max-w-3xl px-4 py-14">
         {sections.map((s) => (
           <section key={s.heading} className="mb-10">

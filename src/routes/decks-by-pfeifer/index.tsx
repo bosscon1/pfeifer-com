@@ -27,7 +27,12 @@ export const Route = createFileRoute("/decks-by-pfeifer/")({
     try {
       return await loadGalleryAlbum({ data: { category: "decks" } });
     } catch {
-      return { featuredUrl: "/images/hero-decks.jpg", photos: [] as { src: string; fullSrc: string; alt: string; name: string }[] };
+      return {
+        featuredUrl: "/images/hero-decks.jpg",
+        videoUrl: "/videos/hero-decks.mp4",
+        overlay: 55,
+        photos: [] as { src: string; fullSrc: string; alt: string; name: string }[],
+      };
     }
   },
   component: Page,
@@ -37,8 +42,9 @@ function Page() {
   const album = Route.useLoaderData();
   return (
     <ServicePage
-      image="/images/hero-decks.jpg"
-      video="/videos/hero-decks.mp4"
+      image={album.featuredUrl || "/images/hero-decks.jpg"}
+      video={album.videoUrl || undefined}
+      overlay={album.overlay}
       eyebrow="Outdoor living"
       title="Decks by Pfeifer"
       lede="Build a new deck or remodel the one you have. Wood rebuilds, composite, KDAT, covered decks, stairs, and rails."

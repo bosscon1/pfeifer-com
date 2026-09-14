@@ -14,10 +14,14 @@ import {
   slugPart,
   type GalleryCategory,
 } from "@/lib/gallery";
+import { readGallerySettings, writeGallerySettings, pingGalleryMysql } from "@/lib/gallery-mysql";
 
 const IMAGES = join(process.cwd(), "public/images");
 const GALLERIES = join(IMAGES, "galleries");
+const VIDEOS = join(process.cwd(), "public/videos");
 const SCRIPT = join(process.cwd(), "scripts/process-gallery-photo.py");
+const DEFAULT_OVERLAY = 55;
+const MAX_VIDEO_BYTES = 18 * 1024 * 1024;
 
 export type GalleryFile = {
   name: string;
@@ -32,6 +36,9 @@ export type GalleryFolder = {
   files: GalleryFile[];
   featured: string | null;
   order: string[];
+  overlay: number;
+  videoName: string | null;
+  videoUrl: string | null;
   publicPath: string;
 };
 
@@ -39,10 +46,12 @@ export type GalleryAlbum = {
   category: string;
   featured: string | null;
   featuredUrl: string | null;
+  overlay: number;
+  videoUrl: string | null;
   photos: { src: string; fullSrc: string; alt: string; name: string }[];
 };
 
-type Manifest = { featured?: string; order?: string[] };
+type Manifest = { featured?: string; order?: string[]; overlay?: number; video?: string | null };
 
 async function dirHasPhotos(dir: string): Promise<boolean> {
   try {
@@ -73,16 +82,87 @@ function kindOf(name: string): GalleryFile["kind"] {
   return "other";
 }
 
-async function readManifest(dir: string): Promise<Manifest> {
+async function readFileManifest(dir: string): Promise<Manifest> {
   try {
     const raw = JSON.parse(await readFile(join(dir, "gallery.json"), "utf8")) as Manifest;
+    const overlay = clampOverlay(raw.overlay);
+    const video =
+      raw.video === null || raw.video === ""
+        ? null
+        : typeof raw.video === "string"
+          ? raw.video
+          : undefined;
     return {
       featured: typeof raw.featured === "string" ? raw.featured : undefined,
       order: Array.isArray(raw.order) ? raw.order.filter((n) => typeof n === "string") : undefined,
+      overlay,
+      video,
     };
   } catch {
-    return {};
+    return { overlay: DEFAULT_OVERLAY };
   }
+}
+
+async function readManifest(category: string, dir: string): Promise<Manifest> {
+  const file = await readFileManifest(dir);
+  const remote = await readGallerySettings(category);
+  if (!remote) return file;
+  return {
+    featured: remote.featured ?? file.featured,
+    order: remote.order ?? file.order,
+    overlay: remote.overlay ?? file.overlay,
+    video: remote.video !== undefined ? remote.video : file.video,
+  };
+}
+
+function clampOverlay(value: unknown): number {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return DEFAULT_OVERLAY;
+  return Math.max(0, Math.min(80, Math.round(n)));
+}
+
+async function writeManifest(category: string, dir: string, patch: Manifest) {
+  const prev = await readManifest(category, dir);
+  const next: Manifest = {
+    featured: patch.featured !== undefined ? patch.featured : prev.featured,
+    order: patch.order !== undefined ? patch.order : prev.order,
+    overlay: patch.overlay !== undefined ? clampOverlay(patch.overlay) : prev.overlay,
+    video: patch.video !== undefined ? patch.video : prev.video,
+  };
+  const out: Record<string, unknown> = {};
+  if (next.featured) out.featured = next.featured;
+  if (next.order) out.order = next.order;
+  if (typeof next.overlay === "number") out.overlay = next.overlay;
+  if (next.video === null) out.video = null;
+  else if (next.video) out.video = next.video;
+  await writeGallerySettings(category, next);
+  await writeFile(join(dir, "gallery.json"), `${JSON.stringify(out, null, 2)}\n`);
+}
+
+async function videoExists(name: string): Promise<boolean> {
+  try {
+    const info = await stat(join(VIDEOS, name));
+    return info.isFile();
+  } catch {
+    return false;
+  }
+}
+
+async function resolveVideo(
+  category: string,
+  declared?: string | null,
+): Promise<{ name: string; url: string } | null> {
+  if (declared === null) return null;
+  const names = [declared, `hero-${category}.mp4`, category === "porches" ? "hero-porch.mp4" : undefined];
+  const seen = new Set<string>();
+  for (const name of names) {
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    if (name.includes("/") || name.includes("\\") || name.startsWith(".")) continue;
+    if (!name.endsWith(".mp4")) continue;
+    if (await videoExists(name)) return { name, url: withBase(`/videos/${name}`) };
+  }
+  return null;
 }
 
 function sortLarges(names: string[], order?: string[]): string[] {
@@ -106,7 +186,7 @@ async function readFolder(category: GalleryCategory): Promise<GalleryFolder> {
   const store = await resolveStore(category);
   await mkdir(store.dir, { recursive: true });
   const names = (await readdir(store.dir)).filter((n) => !n.startsWith(".") && n !== "gallery.json");
-  const manifest = await readManifest(store.dir);
+  const manifest = await readManifest(category, store.dir);
   const ordered = sortLarges(names, manifest.order);
   const files: GalleryFile[] = [];
   for (const name of [...ordered, ...names.filter((n) => kindOf(n) !== "large").sort()]) {
@@ -121,12 +201,16 @@ async function readFolder(category: GalleryCategory): Promise<GalleryFolder> {
     });
   }
   const featured = manifest.featured && ordered.includes(manifest.featured) ? manifest.featured : ordered[0] ?? null;
+  const video = await resolveVideo(category, manifest.video);
   return {
     category,
     count: ordered.length,
     files,
     featured,
     order: ordered,
+    overlay: clampOverlay(manifest.overlay),
+    videoName: video?.name ?? null,
+    videoUrl: video?.url ?? null,
     publicPath: store.urlBase,
   };
 }
@@ -194,6 +278,8 @@ function toAlbum(folder: GalleryFolder): GalleryAlbum {
     category: folder.category,
     featured,
     featuredUrl: featuredFile?.url ?? photos[0]?.fullSrc ?? null,
+    overlay: folder.overlay,
+    videoUrl: folder.videoUrl,
     photos,
   };
 }
@@ -208,6 +294,13 @@ export const listGalleryFolders = createServerFn({ method: "GET" })
       folders.push(await readFolder(category));
     }
     return folders;
+  });
+
+export const galleryMysqlStatus = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    await assertStaffUser(context.userId);
+    return pingGalleryMysql();
   });
 
 export const loadGalleryAlbum = createServerFn({ method: "GET" })
@@ -235,7 +328,7 @@ export const saveGalleryAlbum = createServerFn({ method: "POST" })
     const order = data.order.filter((name) => allowed.has(name));
     const featured = allowed.has(data.featured) ? data.featured : order[0];
     if (!featured) throw new Error("No photos in that folder yet.");
-    await writeFile(join(store.dir, "gallery.json"), `${JSON.stringify({ featured, order }, null, 2)}\n`);
+    await writeManifest(data.category, store.dir, { featured, order });
     return toAlbum(await readFolder(data.category));
   });
 
@@ -275,10 +368,7 @@ export const deleteGalleryPhoto = createServerFn({ method: "POST" })
     }
     const order = folder.order.filter((n) => n !== largeName);
     const featured = folder.featured === largeName ? order[0] ?? null : folder.featured;
-    await writeFile(
-      join(store.dir, "gallery.json"),
-      `${JSON.stringify({ featured, order }, null, 2)}\n`,
-    );
+    await writeManifest(data.category, store.dir, { featured: featured ?? undefined, order });
     return { folder: await readFolder(data.category), deleted: largeName };
   });
 
@@ -367,4 +457,65 @@ export const uploadGalleryPhotos = createServerFn({ method: "POST" })
       folders: await Promise.all(GALLERY_SLUGS.map((c) => readFolder(c))),
       results,
     };
+  });
+
+export const saveGalleryHero = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(
+    z.object({
+      category: z.string(),
+      overlay: z.number().min(0).max(80),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertStaffUser(context.userId);
+    if (!isGalleryCategory(data.category)) throw new Error("Pick a gallery folder.");
+    const store = await resolveStore(data.category);
+    await mkdir(store.dir, { recursive: true });
+    await writeManifest(data.category, store.dir, { overlay: clampOverlay(data.overlay) });
+    return readFolder(data.category);
+  });
+
+export const uploadGalleryVideo = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(
+    z.object({
+      category: z.string(),
+      name: z.string().min(1).max(180),
+      data: z.string().min(32),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertStaffUser(context.userId);
+    if (!isGalleryCategory(data.category)) throw new Error("Pick a gallery folder.");
+    const buf = decodeImage(data.data);
+    if (buf.byteLength > MAX_VIDEO_BYTES) {
+      throw new Error("Keep the hero video under 18 MB.");
+    }
+    if (buf.byteLength < 32) throw new Error("That file is empty.");
+    await mkdir(VIDEOS, { recursive: true });
+    const name = `hero-${data.category}.mp4`;
+    await writeFile(join(VIDEOS, name), buf);
+    const store = await resolveStore(data.category);
+    await mkdir(store.dir, { recursive: true });
+    await writeManifest(data.category, store.dir, { video: name });
+    return readFolder(data.category);
+  });
+
+export const deleteGalleryVideo = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(z.object({ category: z.string() }))
+  .handler(async ({ data, context }) => {
+    await assertStaffUser(context.userId);
+    if (!isGalleryCategory(data.category)) throw new Error("Pick a gallery folder.");
+    const name = `hero-${data.category}.mp4`;
+    try {
+      await unlink(join(VIDEOS, name));
+    } catch {
+      /* not uploaded, or already gone */
+    }
+    const store = await resolveStore(data.category);
+    await mkdir(store.dir, { recursive: true });
+    await writeManifest(data.category, store.dir, { video: null });
+    return readFolder(data.category);
   });
