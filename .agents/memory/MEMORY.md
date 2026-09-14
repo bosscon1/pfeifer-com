@@ -1,0 +1,1 @@
+- [Pfeifer static publishing](pfeifer-static-publishing.md) — use the dedicated prerender build; Replit serves dist/client and requires a root index.html.
