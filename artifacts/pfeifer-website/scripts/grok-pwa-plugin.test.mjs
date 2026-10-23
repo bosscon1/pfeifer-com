@@ -473,6 +473,22 @@ test("escapes host-derived values in the install page", () => {
   assert.equal(html.includes("<script>alert(1)</script>"), false);
 });
 
+test("leaves the checklist manifest as the only install manifest", () => {
+  const html = `<html><head>
+    <link rel="manifest" href="/checklist/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/checklist/icon-180.png">
+    <meta name="apple-mobile-web-app-title" content="Checklist">
+    <meta name="theme-color" content="#1c1f24">
+  </head><body></body></html>`;
+  const out = injectGrokPwaHead(html, { appName: "Pfeifer" });
+  assert.equal(out.includes("/__grok/manifest.webmanifest"), false);
+  assert.equal(out.includes("/__grok/icon-180.png"), false);
+  assert.match(out, /href="\/checklist\/manifest\.webmanifest"/);
+  assert.match(out, /apple-mobile-web-app-title" content="Checklist"/);
+  const twice = injectGrokPwaHead(out, { appName: "Pfeifer" });
+  assert.equal(twice, out);
+});
+
 test("renders the manifest with the per-app name", () => {
   const manifest = JSON.parse(renderWebManifest("wild-race.grok.me"));
   assert.equal(manifest.name, "Wild Race");

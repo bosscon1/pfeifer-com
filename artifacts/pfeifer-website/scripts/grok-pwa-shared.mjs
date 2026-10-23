@@ -434,8 +434,13 @@ export function injectGrokPwaHead(html, ctx = {}) {
   );
   let next = stripShareMetaTags(html);
 
+  // /checklist/ ships its own manifest and icon so Add to Home Screen opens the
+  // list, not the marketing site. A second manifest link would win or lose
+  // depending on the browser, so do not add the app-wide ones beside it.
+  const hasChecklistManifest = next.includes('href="/checklist/manifest.webmanifest"');
   const missing = grokPwaHeadTags(appName)
     .filter(([key]) => {
+      if (hasChecklistManifest && (key === "manifest" || key === "apple-touch-icon")) return false;
       if (key === "manifest") return !next.includes('href="/__grok/manifest.webmanifest"');
       if (key === "apple-touch-icon") return !next.includes('href="/__grok/icon-180.png"');
       return !next.includes(`name="${key}"`);

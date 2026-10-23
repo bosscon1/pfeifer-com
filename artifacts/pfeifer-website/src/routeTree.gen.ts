@@ -32,6 +32,7 @@ import { Route as BrooksGaIndexRouteImport } from './routes/brooks-ga/index'
 import { Route as BuildingADetachedGarageIndexRouteImport } from './routes/building-a-detached-garage/index'
 import { Route as BuildingAGarageIndexRouteImport } from './routes/building-a-garage/index'
 import { Route as BuildingAnOutdoorKitchenIndexRouteImport } from './routes/building-an-outdoor-kitchen/index'
+import { Route as ChecklistIndexRouteImport } from './routes/checklist/index'
 import { Route as ChoosingPaintColorsIndexRouteImport } from './routes/choosing-paint-colors/index'
 import { Route as CommercialBuildingsIndexRouteImport } from './routes/commercial-buildings/index'
 import { Route as CommercialProjectsByPfeiferIndexRouteImport } from './routes/commercial-projects-by-pfeifer/index'
@@ -120,12 +121,16 @@ import { Route as WineCellarIndexRouteImport } from './routes/wine-cellar/index'
 import { Route as YourDreamPorchIndexRouteImport } from './routes/your-dream-porch/index'
 import { Route as YearMonthIndexRouteImport } from './routes/$year/$month/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiChecklistIndexRouteImport } from './routes/api/checklist/index'
 import { Route as CategoryBlogpostsIndexRouteImport } from './routes/category/blogposts/index'
 import { Route as CategoryServicesIndexRouteImport } from './routes/category/services/index'
 import { Route as CategorySuppliersIndexRouteImport } from './routes/category/suppliers/index'
 import { Route as InternalFontsIndexRouteImport } from './routes/internal/fonts/index'
+import { Route as ApiChecklistIdIndexRouteImport } from './routes/api/checklist/$id/index'
+import { Route as ApiChecklistBotIndexRouteImport } from './routes/api/checklist/bot/index'
 import { Route as BlogPagePageIndexRouteImport } from './routes/blog/page/$page/index'
 import { Route as BlogTopicTagIndexRouteImport } from './routes/blog/topic/$tag/index'
+import { Route as ApiChecklistBotIdIndexRouteImport } from './routes/api/checklist/bot/$id/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -246,6 +251,11 @@ const BuildingAnOutdoorKitchenIndexRoute =
     path: '/building-an-outdoor-kitchen/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ChecklistIndexRoute = ChecklistIndexRouteImport.update({
+  id: '/checklist/',
+  path: '/checklist/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChoosingPaintColorsIndexRoute =
   ChoosingPaintColorsIndexRouteImport.update({
     id: '/choosing-paint-colors/',
@@ -714,6 +724,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChecklistIndexRoute = ApiChecklistIndexRouteImport.update({
+  id: '/api/checklist/',
+  path: '/api/checklist/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoryBlogpostsIndexRoute = CategoryBlogpostsIndexRouteImport.update({
   id: '/category/blogposts/',
   path: '/category/blogposts/',
@@ -734,6 +749,16 @@ const InternalFontsIndexRoute = InternalFontsIndexRouteImport.update({
   path: '/internal/fonts/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChecklistIdIndexRoute = ApiChecklistIdIndexRouteImport.update({
+  id: '/api/checklist/$id/',
+  path: '/api/checklist/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChecklistBotIndexRoute = ApiChecklistBotIndexRouteImport.update({
+  id: '/api/checklist/bot/',
+  path: '/api/checklist/bot/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogPagePageIndexRoute = BlogPagePageIndexRouteImport.update({
   id: '/blog/page/$page/',
   path: '/blog/page/$page/',
@@ -742,6 +767,11 @@ const BlogPagePageIndexRoute = BlogPagePageIndexRouteImport.update({
 const BlogTopicTagIndexRoute = BlogTopicTagIndexRouteImport.update({
   id: '/blog/topic/$tag/',
   path: '/blog/topic/$tag/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChecklistBotIdIndexRoute = ApiChecklistBotIdIndexRouteImport.update({
+  id: '/api/checklist/bot/$id/',
+  path: '/api/checklist/bot/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -769,6 +799,7 @@ export interface FileRoutesByFullPath {
   '/building-a-detached-garage/': typeof BuildingADetachedGarageIndexRoute
   '/building-a-garage/': typeof BuildingAGarageIndexRoute
   '/building-an-outdoor-kitchen/': typeof BuildingAnOutdoorKitchenIndexRoute
+  '/checklist/': typeof ChecklistIndexRoute
   '/choosing-paint-colors/': typeof ChoosingPaintColorsIndexRoute
   '/commercial-buildings/': typeof CommercialBuildingsIndexRoute
   '/commercial-projects-by-pfeifer/': typeof CommercialProjectsByPfeiferIndexRoute
@@ -857,12 +888,16 @@ export interface FileRoutesByFullPath {
   '/your-dream-porch/': typeof YourDreamPorchIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/$year/$month/': typeof YearMonthIndexRoute
+  '/api/checklist/': typeof ApiChecklistIndexRoute
   '/category/blogposts/': typeof CategoryBlogpostsIndexRoute
   '/category/services/': typeof CategoryServicesIndexRoute
   '/category/suppliers/': typeof CategorySuppliersIndexRoute
   '/internal/fonts/': typeof InternalFontsIndexRoute
+  '/api/checklist/$id/': typeof ApiChecklistIdIndexRoute
+  '/api/checklist/bot/': typeof ApiChecklistBotIndexRoute
   '/blog/page/$page/': typeof BlogPagePageIndexRoute
   '/blog/topic/$tag/': typeof BlogTopicTagIndexRoute
+  '/api/checklist/bot/$id/': typeof ApiChecklistBotIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -888,6 +923,7 @@ export interface FileRoutesByTo {
   '/building-a-detached-garage': typeof BuildingADetachedGarageIndexRoute
   '/building-a-garage': typeof BuildingAGarageIndexRoute
   '/building-an-outdoor-kitchen': typeof BuildingAnOutdoorKitchenIndexRoute
+  '/checklist': typeof ChecklistIndexRoute
   '/choosing-paint-colors': typeof ChoosingPaintColorsIndexRoute
   '/commercial-buildings': typeof CommercialBuildingsIndexRoute
   '/commercial-projects-by-pfeifer': typeof CommercialProjectsByPfeiferIndexRoute
@@ -976,12 +1012,16 @@ export interface FileRoutesByTo {
   '/your-dream-porch': typeof YourDreamPorchIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/$year/$month': typeof YearMonthIndexRoute
+  '/api/checklist': typeof ApiChecklistIndexRoute
   '/category/blogposts': typeof CategoryBlogpostsIndexRoute
   '/category/services': typeof CategoryServicesIndexRoute
   '/category/suppliers': typeof CategorySuppliersIndexRoute
   '/internal/fonts': typeof InternalFontsIndexRoute
+  '/api/checklist/$id': typeof ApiChecklistIdIndexRoute
+  '/api/checklist/bot': typeof ApiChecklistBotIndexRoute
   '/blog/page/$page': typeof BlogPagePageIndexRoute
   '/blog/topic/$tag': typeof BlogTopicTagIndexRoute
+  '/api/checklist/bot/$id': typeof ApiChecklistBotIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1008,6 +1048,7 @@ export interface FileRoutesById {
   '/building-a-detached-garage/': typeof BuildingADetachedGarageIndexRoute
   '/building-a-garage/': typeof BuildingAGarageIndexRoute
   '/building-an-outdoor-kitchen/': typeof BuildingAnOutdoorKitchenIndexRoute
+  '/checklist/': typeof ChecklistIndexRoute
   '/choosing-paint-colors/': typeof ChoosingPaintColorsIndexRoute
   '/commercial-buildings/': typeof CommercialBuildingsIndexRoute
   '/commercial-projects-by-pfeifer/': typeof CommercialProjectsByPfeiferIndexRoute
@@ -1096,12 +1137,16 @@ export interface FileRoutesById {
   '/your-dream-porch/': typeof YourDreamPorchIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/$year/$month/': typeof YearMonthIndexRoute
+  '/api/checklist/': typeof ApiChecklistIndexRoute
   '/category/blogposts/': typeof CategoryBlogpostsIndexRoute
   '/category/services/': typeof CategoryServicesIndexRoute
   '/category/suppliers/': typeof CategorySuppliersIndexRoute
   '/internal/fonts/': typeof InternalFontsIndexRoute
+  '/api/checklist/$id/': typeof ApiChecklistIdIndexRoute
+  '/api/checklist/bot/': typeof ApiChecklistBotIndexRoute
   '/blog/page/$page/': typeof BlogPagePageIndexRoute
   '/blog/topic/$tag/': typeof BlogTopicTagIndexRoute
+  '/api/checklist/bot/$id/': typeof ApiChecklistBotIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1129,6 +1174,7 @@ export interface FileRouteTypes {
     | '/building-a-detached-garage/'
     | '/building-a-garage/'
     | '/building-an-outdoor-kitchen/'
+    | '/checklist/'
     | '/choosing-paint-colors/'
     | '/commercial-buildings/'
     | '/commercial-projects-by-pfeifer/'
@@ -1217,12 +1263,16 @@ export interface FileRouteTypes {
     | '/your-dream-porch/'
     | '/api/auth/$'
     | '/$year/$month/'
+    | '/api/checklist/'
     | '/category/blogposts/'
     | '/category/services/'
     | '/category/suppliers/'
     | '/internal/fonts/'
+    | '/api/checklist/$id/'
+    | '/api/checklist/bot/'
     | '/blog/page/$page/'
     | '/blog/topic/$tag/'
+    | '/api/checklist/bot/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1248,6 +1298,7 @@ export interface FileRouteTypes {
     | '/building-a-detached-garage'
     | '/building-a-garage'
     | '/building-an-outdoor-kitchen'
+    | '/checklist'
     | '/choosing-paint-colors'
     | '/commercial-buildings'
     | '/commercial-projects-by-pfeifer'
@@ -1336,12 +1387,16 @@ export interface FileRouteTypes {
     | '/your-dream-porch'
     | '/api/auth/$'
     | '/$year/$month'
+    | '/api/checklist'
     | '/category/blogposts'
     | '/category/services'
     | '/category/suppliers'
     | '/internal/fonts'
+    | '/api/checklist/$id'
+    | '/api/checklist/bot'
     | '/blog/page/$page'
     | '/blog/topic/$tag'
+    | '/api/checklist/bot/$id'
   id:
     | '__root__'
     | '/'
@@ -1367,6 +1422,7 @@ export interface FileRouteTypes {
     | '/building-a-detached-garage/'
     | '/building-a-garage/'
     | '/building-an-outdoor-kitchen/'
+    | '/checklist/'
     | '/choosing-paint-colors/'
     | '/commercial-buildings/'
     | '/commercial-projects-by-pfeifer/'
@@ -1455,12 +1511,16 @@ export interface FileRouteTypes {
     | '/your-dream-porch/'
     | '/api/auth/$'
     | '/$year/$month/'
+    | '/api/checklist/'
     | '/category/blogposts/'
     | '/category/services/'
     | '/category/suppliers/'
     | '/internal/fonts/'
+    | '/api/checklist/$id/'
+    | '/api/checklist/bot/'
     | '/blog/page/$page/'
     | '/blog/topic/$tag/'
+    | '/api/checklist/bot/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1487,6 +1547,7 @@ export interface RootRouteChildren {
   BuildingADetachedGarageIndexRoute: typeof BuildingADetachedGarageIndexRoute
   BuildingAGarageIndexRoute: typeof BuildingAGarageIndexRoute
   BuildingAnOutdoorKitchenIndexRoute: typeof BuildingAnOutdoorKitchenIndexRoute
+  ChecklistIndexRoute: typeof ChecklistIndexRoute
   ChoosingPaintColorsIndexRoute: typeof ChoosingPaintColorsIndexRoute
   CommercialBuildingsIndexRoute: typeof CommercialBuildingsIndexRoute
   CommercialProjectsByPfeiferIndexRoute: typeof CommercialProjectsByPfeiferIndexRoute
@@ -1575,12 +1636,16 @@ export interface RootRouteChildren {
   YourDreamPorchIndexRoute: typeof YourDreamPorchIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   YearMonthIndexRoute: typeof YearMonthIndexRoute
+  ApiChecklistIndexRoute: typeof ApiChecklistIndexRoute
   CategoryBlogpostsIndexRoute: typeof CategoryBlogpostsIndexRoute
   CategoryServicesIndexRoute: typeof CategoryServicesIndexRoute
   CategorySuppliersIndexRoute: typeof CategorySuppliersIndexRoute
   InternalFontsIndexRoute: typeof InternalFontsIndexRoute
+  ApiChecklistIdIndexRoute: typeof ApiChecklistIdIndexRoute
+  ApiChecklistBotIndexRoute: typeof ApiChecklistBotIndexRoute
   BlogPagePageIndexRoute: typeof BlogPagePageIndexRoute
   BlogTopicTagIndexRoute: typeof BlogTopicTagIndexRoute
+  ApiChecklistBotIdIndexRoute: typeof ApiChecklistBotIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1744,6 +1809,13 @@ declare module '@tanstack/react-router' {
       path: '/building-an-outdoor-kitchen'
       fullPath: '/building-an-outdoor-kitchen/'
       preLoaderRoute: typeof BuildingAnOutdoorKitchenIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checklist/': {
+      id: '/checklist/'
+      path: '/checklist'
+      fullPath: '/checklist/'
+      preLoaderRoute: typeof ChecklistIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/choosing-paint-colors/': {
@@ -2362,6 +2434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checklist/': {
+      id: '/api/checklist/'
+      path: '/api/checklist'
+      fullPath: '/api/checklist/'
+      preLoaderRoute: typeof ApiChecklistIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/category/blogposts/': {
       id: '/category/blogposts/'
       path: '/category/blogposts'
@@ -2390,6 +2469,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalFontsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checklist/$id/': {
+      id: '/api/checklist/$id/'
+      path: '/api/checklist/$id'
+      fullPath: '/api/checklist/$id/'
+      preLoaderRoute: typeof ApiChecklistIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checklist/bot/': {
+      id: '/api/checklist/bot/'
+      path: '/api/checklist/bot'
+      fullPath: '/api/checklist/bot/'
+      preLoaderRoute: typeof ApiChecklistBotIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/page/$page/': {
       id: '/blog/page/$page/'
       path: '/blog/page/$page'
@@ -2402,6 +2495,13 @@ declare module '@tanstack/react-router' {
       path: '/blog/topic/$tag'
       fullPath: '/blog/topic/$tag/'
       preLoaderRoute: typeof BlogTopicTagIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checklist/bot/$id/': {
+      id: '/api/checklist/bot/$id/'
+      path: '/api/checklist/bot/$id'
+      fullPath: '/api/checklist/bot/$id/'
+      preLoaderRoute: typeof ApiChecklistBotIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -2432,6 +2532,7 @@ const rootRouteChildren: RootRouteChildren = {
   BuildingADetachedGarageIndexRoute: BuildingADetachedGarageIndexRoute,
   BuildingAGarageIndexRoute: BuildingAGarageIndexRoute,
   BuildingAnOutdoorKitchenIndexRoute: BuildingAnOutdoorKitchenIndexRoute,
+  ChecklistIndexRoute: ChecklistIndexRoute,
   ChoosingPaintColorsIndexRoute: ChoosingPaintColorsIndexRoute,
   CommercialBuildingsIndexRoute: CommercialBuildingsIndexRoute,
   CommercialProjectsByPfeiferIndexRoute: CommercialProjectsByPfeiferIndexRoute,
@@ -2524,12 +2625,16 @@ const rootRouteChildren: RootRouteChildren = {
   YourDreamPorchIndexRoute: YourDreamPorchIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   YearMonthIndexRoute: YearMonthIndexRoute,
+  ApiChecklistIndexRoute: ApiChecklistIndexRoute,
   CategoryBlogpostsIndexRoute: CategoryBlogpostsIndexRoute,
   CategoryServicesIndexRoute: CategoryServicesIndexRoute,
   CategorySuppliersIndexRoute: CategorySuppliersIndexRoute,
   InternalFontsIndexRoute: InternalFontsIndexRoute,
+  ApiChecklistIdIndexRoute: ApiChecklistIdIndexRoute,
+  ApiChecklistBotIndexRoute: ApiChecklistBotIndexRoute,
   BlogPagePageIndexRoute: BlogPagePageIndexRoute,
   BlogTopicTagIndexRoute: BlogTopicTagIndexRoute,
+  ApiChecklistBotIdIndexRoute: ApiChecklistBotIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

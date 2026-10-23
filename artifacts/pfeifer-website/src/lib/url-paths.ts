@@ -1,7 +1,7 @@
 import { ARTICLES } from "@/data/articles";
 import { CITIES, SERVICES } from "@/data/site";
 
-export const HIDDEN_PREFIXES = ["/admin", "/login", "/api", "/internal", "/auth"];
+export const HIDDEN_PREFIXES = ["/admin", "/login", "/api", "/internal", "/auth", "/checklist"];
 
 export function normalizePath(input: string): string {
   let raw = input.trim();

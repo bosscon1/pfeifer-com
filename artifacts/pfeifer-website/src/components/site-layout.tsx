@@ -6,7 +6,11 @@ import { SiteHeader } from "@/components/site-header";
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const bare = pathname.startsWith("/internal") || pathname.startsWith("/admin") || pathname.startsWith("/login");
+  const bare =
+    pathname.startsWith("/internal") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/checklist");
 
   if (bare) {
     return <div className="min-h-dvh bg-paper">{children}</div>;
